@@ -1,0 +1,176 @@
+/* Gaya halaman subsistem obat - disalin dari obat.php versi PHP native */
+        .obat-wrap {
+            max-width: 1150px;
+            margin: 28px auto;
+            padding: 0 16px;
+        }
+
+        .obat-wrap h2 {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .obat-card {
+            background: white;
+            border: 1px solid #dce4ee;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(16, 24, 40, 0.04);
+        }
+
+        .obat-card h3 {
+            font-size: 17px;
+            margin-bottom: 18px;
+        }
+
+        .obat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .obat-card label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .obat-card input,
+        .obat-card select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccd5e0;
+            border-radius: 7px;
+        }
+
+        .obat-card button {
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 7px;
+            background: #155eef;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .obat-card button:hover {
+            background: #1246b8;
+        }
+
+        .obat-scroll {
+            overflow-x: auto;
+        }
+
+        .obat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .obat-table th,
+        .obat-table td {
+            padding: 11px;
+            border-bottom: 1px solid #e5eaf0;
+            text-align: left;
+        }
+
+        .obat-table th {
+            background: #f0f4f9;
+            color: #344054;
+        }
+
+        .obat-alert {
+            padding: 13px 15px;
+            background: #e2f5e7;
+            color: #166534;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .obat-alert.error {
+            background: #ffe5e5;
+            color: #b42318;
+        }
+
+        .obat-ringkasan {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+        }
+
+        .obat-stat {
+            padding: 16px;
+            border: 1px solid #e4eaf2;
+            border-radius: 10px;
+            background: #f9fbff;
+        }
+
+        .obat-stat-label {
+            color: #667085;
+            font-size: 13px;
+        }
+
+        .obat-angka {
+            font-size: 27px;
+            font-weight: bold;
+            color: #155eef;
+            margin-top: 8px;
+        }
+
+        .stok-rendah {
+            color: #b54708;
+            font-weight: bold;
+        }
+
+        .stok-cukup {
+            color: #16803d;
+            font-weight: bold;
+        }
+
+        .teks-bantu {
+            color: #526174;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .obat-wrap {
+                padding: 0 12px;
+                margin: 20px auto;
+            }
+
+            .obat-card {
+                padding: 15px;
+            }
+        }
+    
+/* ===== Tambahan MediStock RS (Laravel) ===== */
+.main-nav form { display: inline; margin: 0; }
+.main-nav .nav-logout { background: transparent; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
+.main-nav .nav-logout:hover { background: rgba(255,255,255,.12); }
+.obat-card textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccd5e0; border-radius: 7px; font: inherit; }
+.obat-card .btn-garis, .btn-garis { background: #fff !important; color: #155eef !important; border: 1px solid #155eef !important; text-decoration: none; display: inline-block; padding: 8px 14px; border-radius: 7px; font-weight: 600; font-size: 14px; }
+.obat-card .btn-kecil { padding: 6px 12px; font-size: 13px; }
+.obat-card .btn-hapus { background: #fff; color: #b42318; border: 1px solid #f3b8b3; padding: 6px 10px; }
+.obat-card .btn-hapus:hover { background: #fff1f0; }
+.btn-pesan { display: inline-block; padding: 6px 12px; border-radius: 7px; background: #155eef; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.btn-pesan:hover { background: #1246b8; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge-merah { background: #fde8e8; color: #a32d2d; }
+.badge-kuning { background: #fdf3dc; color: #854f0b; }
+.badge-hijau { background: #e3f4ea; color: #1f6b3a; }
+.badge-abu { background: #eef1f4; color: #5b6b7f; }
+.badge-biru { background: #e6f1fb; color: #0c447c; }
+.angka-merah { color: #b42318 !important; }
+.angka-kuning { color: #b54708 !important; }
+.angka-hijau { color: #16803d !important; }
+.obat-total { font-size: 20px; font-weight: 700; text-align: right; margin: 14px 0; }
+.obat-filter { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.obat-filter select { width: auto !important; }
+.obat-alert ul { margin: 0; padding-left: 18px; }
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.login-card { width: 100%; max-width: 400px; }
+.login-card h1 { font-size: 26px; margin: 0 0 4px; color: #0f2854; }
+.login-card .obat-grid { grid-template-columns: 1fr; }
