@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * php artisan db:seed  -> akun admin + data demo subsistem obat
+     * php artisan db:seed  -> akun admin & petugas + data demo ketiga subsistem
      */
     public function run(): void
     {
@@ -23,6 +23,20 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $this->call(MediStockDemoSeeder::class);
+        User::updateOrCreate(
+            ['username' => 'petugas'],
+            [
+                'name' => 'Petugas Pendaftaran',
+                'email' => 'petugas@his-rs.test',
+                'password' => env('PETUGAS_PASSWORD', 'petugas123'),
+                'role' => 'petugas',
+                'aktif' => true,
+            ]
+        );
+
+        $this->call([
+            PendaftaranAntreanDemoSeeder::class,
+            MediStockDemoSeeder::class,
+        ]);
     }
 }

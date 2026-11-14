@@ -174,3 +174,32 @@
 .login-card { width: 100%; max-width: 400px; }
 .login-card h1 { font-size: 26px; margin: 0 0 4px; color: #0f2854; }
 .login-card .obat-grid { grid-template-columns: 1fr; }
+
+/* ===== Menu bertingkat (dropdown) ===== */
+.main-nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.nav-grup { position: relative; }
+.nav-grup-judul { background: transparent; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
+.nav-grup-judul:hover, .nav-grup-judul.active { background: rgba(255,255,255,.14); }
+.nav-dropdown { display: none; position: absolute; top: 100%; left: 0; z-index: 20; min-width: 220px; background: #fff; border: 1px solid #dce4ee; border-radius: 10px; padding: 6px; box-shadow: 0 8px 24px rgba(16,24,40,.12); }
+.nav-grup:hover .nav-dropdown, .nav-grup:focus-within .nav-dropdown { display: block; }
+.nav-dropdown a { display: block; color: #1d2939 !important; padding: 9px 12px !important; border-radius: 7px; white-space: nowrap; background: transparent !important; }
+.nav-dropdown a:hover { background: #f0f4f9 !important; }
+.nav-dropdown a.active { background: #e6f1fb !important; color: #0c447c !important; font-weight: 600; }
+.badge-ungu { background: #eeedfe; color: #3c3489; }
+.obat-card details summary { cursor: pointer; color: #155eef; font-size: 13px; }
+.obat-card details ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: #526174; }
+.aksi-baris { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.aksi-baris form { margin: 0; }
+.obat-card .btn-kecil { padding: 6px 12px; font-size: 13px; }
+.obat-card .btn-merah { background: #fff; color: #b42318; border: 1px solid #f3b8b3; }
+.obat-card .btn-merah:hover { background: #fff1f0; }
+.obat-card .btn-kuning { background: #b54708; }
+.obat-card .btn-kuning:hover { background: #93370d; }
+.kartu-rekom { border: 1px solid #e4eaf2; border-radius: 10px; padding: 14px 16px; background: #f9fbff; }
+.kartu-rekom h4 { margin: 6px 0; font-size: 15px; }
+.kartu-rekom p { margin: 0; font-size: 13px; color: #526174; line-height: 1.6; }
+.grid-rekom { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.bar { height: 8px; background: #e4eaf2; border-radius: 6px; overflow: hidden; margin-top: 8px; }
+.bar span { display: block; height: 100%; background: #155eef; }
+.obat-cari { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.obat-cari input, .obat-cari select { flex: 1; min-width: 180px; width: auto !important; }

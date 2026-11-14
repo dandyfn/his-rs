@@ -14,7 +14,7 @@ dengan tampilan dan fungsi yang sama.
 ## Arsitektur (MVC + service layer)
 
 ```
-Browser ──> routes/web.php ──> Controller ──> Service (logika bisnis) ──> Model (Eloquent) ──> MySQL (Aiven)
+Browser ──> routes/web.php ──> Controller ──> Service (logika bisnis) ──> Model (Eloquent) ──> PostgreSQL (Aiven)
                                    │
                                    └──> View (Blade) ──> HTML
 ```

@@ -7,11 +7,7 @@ PORT="${PORT:-10000}"
 sed -ri "s/Listen 80$/Listen ${PORT}/" /etc/apache2/ports.conf
 sed -ri "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
 
-# Sertifikat SSL Aiven disimpan sebagai environment variable DB_CA_CERT
-if [ -n "$DB_CA_CERT" ]; then
-    printf '%s\n' "$DB_CA_CERT" > /var/www/html/storage/ca.pem
-    export MYSQL_ATTR_SSL_CA=/var/www/html/storage/ca.pem
-fi
+# Koneksi ke database Aiven memakai SSL (DB_SSLMODE=require di pengaturan Render)
 
 php artisan config:cache
 php artisan route:cache

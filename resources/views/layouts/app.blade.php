@@ -10,6 +10,30 @@
 </head>
 <body>
 
+@php
+    $menu = [
+        'Pendaftaran' => [
+            'pasien.index' => 'Data Pasien',
+            'identitas.index' => 'Identitas & Verifikasi',
+        ],
+        'Antrean' => [
+            'antrean.index' => 'Antrean Hari Ini',
+            'poli.index' => 'Data Poli',
+            'riwayat-antrean.index' => 'Riwayat Status',
+            'rekomendasi-antrean.index' => 'Rekomendasi Antrean',
+            'laporan-antrean.index' => 'Laporan Antrean',
+        ],
+        'Obat' => [
+            'obat.index' => 'Stok Obat',
+            'supplier.index' => 'Supplier',
+            'pembelian.index' => 'Pembelian Obat',
+            'penjualan.index' => 'Penjualan Obat',
+            'rekomendasi.index' => 'Rekomendasi Pengadaan',
+        ],
+    ];
+    $aktif = fn ($rute) => request()->routeIs(Str::before($rute, '.') . '.*');
+@endphp
+
 <header class="main-header">
     <div class="header-container">
         <div class="brand">
@@ -18,19 +42,23 @@
         </div>
 
         <nav class="main-nav">
-            @php
-                $menu = [
-                    'dashboard' => 'Dashboard',
-                    'obat.index' => 'Stok Obat',
-                    'supplier.index' => 'Supplier',
-                    'pembelian.index' => 'Pembelian Obat',
-                    'penjualan.index' => 'Penjualan Obat',
-                    'rekomendasi.index' => 'Rekomendasi Obat',
-                ];
-            @endphp
-            @foreach ($menu as $rute => $label)
-                <a href="{{ route($rute) }}" @class(['active' => request()->routeIs(Str::before($rute, '.') . '*')])>{{ $label }}</a>
+            <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>Dashboard</a>
+
+            @foreach ($menu as $grup => $item)
+                <div class="nav-grup">
+                    <button type="button" @class(['nav-grup-judul', 'active' => collect($item)->keys()->contains($aktif)])>{{ $grup }} ▾</button>
+                    <div class="nav-dropdown">
+                        @foreach ($item as $rute => $label)
+                            <a href="{{ route($rute) }}" @class(['active' => $aktif($rute)])>{{ $label }}</a>
+                        @endforeach
+                    </div>
+                </div>
             @endforeach
+
+            @can('admin')
+                <a href="{{ route('pengguna.index') }}" @class(['active' => request()->routeIs('pengguna.*')])>Pengguna</a>
+            @endcan
+
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="nav-logout">Logout</button>

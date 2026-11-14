@@ -1,8 +1,8 @@
 # Dockerfile untuk deploy ke Render (tidak perlu dijalankan di laptop).
 FROM php:8.4-apache
 
-RUN apt-get update && apt-get install -y --no-install-recommends git unzip libzip-dev libicu-dev \
-    && docker-php-ext-install pdo_mysql zip intl bcmath \
+RUN apt-get update && apt-get install -y --no-install-recommends git unzip libzip-dev libicu-dev libpq-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql zip intl bcmath \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
