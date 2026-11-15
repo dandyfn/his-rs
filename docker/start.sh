@@ -7,6 +7,10 @@ PORT="${PORT:-10000}"
 sed -ri "s/Listen 80$/Listen ${PORT}/" /etc/apache2/ports.conf
 sed -ri "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
 
+# Folder kerja Laravel (bisa kosong karena tidak ikut di image)
+mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
 # Koneksi ke database Aiven memakai SSL (DB_SSLMODE=require di pengaturan Render)
 
 php artisan config:cache

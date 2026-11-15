@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Render (dan hosting sejenis) meneruskan request lewat proxy HTTPS.
+        // Tanpa ini Laravel mengira situsnya http://, sehingga CSS/gambar diblokir browser.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
