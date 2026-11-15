@@ -33,7 +33,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/identitas-pasien', [IdentitasPasienController::class, 'index'])->name('identitas.index');
     Route::post('/identitas-pasien', [IdentitasPasienController::class, 'store'])->name('identitas.store');
+    Route::put('/identitas-pasien/{identitas}', [IdentitasPasienController::class, 'update'])->name('identitas.update');
     Route::post('/identitas-pasien/{identitas}/tindakan', [IdentitasPasienController::class, 'tindakan'])->name('identitas.tindakan');
+    Route::post('/identitas-pasien/{identitas}/jadikan-pasien', [IdentitasPasienController::class, 'jadikanPasien'])->name('identitas.jadikan-pasien');
 
     // ===== Subsistem 2: Manajemen Stok Obat (MediStock RS) =====
     Route::get('/obat', [ObatController::class, 'index'])->name('obat.index');

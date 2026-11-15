@@ -33,8 +33,11 @@ class IdentitasPasien extends Model
     /** Rekomendasi tindak lanjut berbasis aturan (sama dengan versi native). */
     public function rekomendasi(): string
     {
+        if ($this->pasien_id) {
+            return 'Identitas telah diselesaikan menjadi pasien tetap. Perubahan data dilakukan melalui menu Data Pasien.';
+        }
         if ($this->status_verifikasi === 'terverifikasi') {
-            return 'Identitas telah diverifikasi. Perubahan berikutnya perlu didukung bukti.';
+            return 'Identitas telah diverifikasi. Jadikan pasien tetap agar dapat dipakai di antrean dan layanan lain.';
         }
         if (empty($this->nomor_identitas) || empty($this->tanggal_lahir)) {
             return 'Lengkapi informasi yang belum tersedia dan konfirmasikan kepada pasien atau pendamping.';
@@ -43,8 +46,17 @@ class IdentitasPasien extends Model
         return 'Cocokkan informasi dengan dokumen pendukung sebelum verifikasi.';
     }
 
+    public function labelStatus(): string
+    {
+        return $this->pasien_id ? 'pasien tetap' : str_replace('_', ' ', $this->status_verifikasi);
+    }
+
     public function kelasStatus(): string
     {
+        if ($this->pasien_id) {
+            return 'badge-ungu';
+        }
+
         return match ($this->status_verifikasi) {
             'terverifikasi' => 'badge-hijau',
             'perlu_konfirmasi' => 'badge-kuning',

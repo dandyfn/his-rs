@@ -153,4 +153,90 @@ class PendaftaranAntreanTest extends TestCase
         $this->post('/login', ['username' => 'petugas', 'password' => 'petugas123'])->assertSessionHasErrors('username');
         $this->assertGuest();
     }
+
+    public function test_fr01_fr04_data_pasien_lengkap_dan_validasi_nik(): void
+    {
+        $this->actingAs($this->petugas)->post('/pasien', [
+            'kode_pasien' => 'P-0300', 'nama' => 'Data Lengkap', 'nik' => '3573999900000001',
+            'tanggal_lahir' => '1990-01-01', 'jenis_kelamin' => 'L', 'alamat' => 'Jl. Uji', 'no_hp' => '0812-1111-2222',
+        ])->assertRedirect('/pasien');
+        $p = Pasien::where('kode_pasien', 'P-0300')->firstOrFail();
+        $this->assertSame('3573999900000001', $p->nik);
+        $this->assertSame('L', $p->jenis_kelamin);
+
+        // NIK salah format, NIK ganda, jenis kelamin tidak valid, tanggal lahir di masa depan
+        $this->actingAs($this->petugas)->post('/pasien', ['kode_pasien' => 'P-0301', 'nama' => 'X', 'nik' => '123'])
+            ->assertSessionHasErrors('nik');
+        $this->actingAs($this->petugas)->post('/pasien', ['kode_pasien' => 'P-0302', 'nama' => 'X', 'nik' => '3573999900000001'])
+            ->assertSessionHasErrors('nik');
+        $this->actingAs($this->petugas)->post('/pasien', ['kode_pasien' => 'P-0303', 'nama' => 'X', 'jenis_kelamin' => 'Z',
+            'tanggal_lahir' => now()->addDay()->toDateString()])
+            ->assertSessionHasErrors(['jenis_kelamin', 'tanggal_lahir']);
+
+        $this->actingAs($this->petugas)->get('/pasien?cari=3573999900000001')->assertSee('Data Lengkap');
+    }
+
+    public function test_fr06_pembaruan_identitas_tercatat_dan_verifikasi_ulang(): void
+    {
+        $identitas = IdentitasPasien::where('kode_sementara', 'TMP-DEMO-3')->firstOrFail(); // terverifikasi
+        $this->actingAs($this->petugas)->put("/identitas-pasien/{$identitas->id}", [
+            'nama_sementara' => $identitas->nama_sementara, 'tanggal_lahir' => '1985-09-30',
+            'nomor_identitas' => $identitas->nomor_identitas, 'kontak' => '0813-9999-0000',
+        ])->assertRedirect('/identitas-pasien');
+
+        $identitas->refresh();
+        $this->assertSame('0813-9999-0000', $identitas->kontak);
+        $this->assertSame('perlu_konfirmasi', $identitas->status_verifikasi);
+        $riwayat = $identitas->riwayat()->first();
+        $this->assertSame('pembaruan', $riwayat->aksi);
+        $this->assertStringContainsString('Kontak: 0813-0000-2222 → 0813-9999-0000', $riwayat->detail);
+        $this->assertSame($this->petugas->id, $riwayat->user_id);
+    }
+
+    public function test_fr07_identitas_terverifikasi_dijadikan_pasien_tetap(): void
+    {
+        $belum = IdentitasPasien::where('kode_sementara', 'TMP-DEMO-1')->firstOrFail(); // masih sementara
+        $this->actingAs($this->petugas)->post("/identitas-pasien/{$belum->id}/jadikan-pasien")
+            ->assertSessionHasErrors('pasien_id');
+
+        $identitas = IdentitasPasien::where('kode_sementara', 'TMP-DEMO-3')->firstOrFail();
+        $jumlah = Pasien::count();
+        $this->actingAs($this->petugas)->post("/identitas-pasien/{$identitas->id}/jadikan-pasien", ['pasien_id' => ''])
+            ->assertRedirect('/identitas-pasien');
+
+        $identitas->refresh();
+        $this->assertSame($jumlah + 1, Pasien::count());
+        $this->assertSame('Ahmad Fauzi', $identitas->pasien->nama);
+        $this->assertSame('P-0011', $identitas->pasien->kode_pasien);
+        $this->assertSame('3573010000000001', $identitas->pasien->nik);
+        $this->assertSame('penyelesaian', $identitas->riwayat()->first()->aksi);
+        $this->assertSame(2, $identitas->riwayat()->count()); // riwayat lama tidak hilang
+
+        // tidak bisa diproses dua kali, dan tidak bisa diedit lagi dari menu identitas
+        $this->actingAs($this->petugas)->post("/identitas-pasien/{$identitas->id}/jadikan-pasien")
+            ->assertSessionHasErrors('pasien_id');
+        $this->actingAs($this->petugas)->put("/identitas-pasien/{$identitas->id}", ['nama_sementara' => 'Ubah'])
+            ->assertSessionHasErrors('nama_sementara');
+
+        // pasien baru langsung bisa didaftarkan ke antrean
+        $this->actingAs($this->petugas)->post('/antrean', ['pasien_id' => $identitas->pasien_id, 'poli_id' => Poli::first()->id])
+            ->assertSessionHasNoErrors();
+    }
+
+    public function test_fr07_kaitkan_ke_pasien_yang_sudah_ada(): void
+    {
+        $this->actingAs($this->petugas)->post('/identitas-pasien', ['nama_sementara' => 'Budi', 'nomor_identitas' => '3573000000000002']);
+        $identitas = IdentitasPasien::latest('id')->first();
+        $this->actingAs($this->petugas)->post("/identitas-pasien/{$identitas->id}/tindakan", ['aksi' => 'verifikasi']);
+
+        // halaman menyarankan Budi Santoso (P-0002) karena NIK sama
+        $this->actingAs($this->petugas)->get('/identitas-pasien')->assertSee('Cocok (NIK sama): P-0002 - Budi Santoso');
+
+        $budi = Pasien::where('kode_pasien', 'P-0002')->first();
+        $jumlah = Pasien::count();
+        $this->actingAs($this->petugas)->post("/identitas-pasien/{$identitas->id}/jadikan-pasien", ['pasien_id' => $budi->id])
+            ->assertRedirect('/identitas-pasien');
+        $this->assertSame($budi->id, $identitas->fresh()->pasien_id);
+        $this->assertSame($jumlah, Pasien::count());
+    }
 }

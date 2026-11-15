@@ -21,10 +21,24 @@ class PendaftaranAntreanDemoSeeder extends Seeder
             Poli::firstOrCreate(['nama_poli' => $nama], ['batas_antrean' => $batas, 'aktif' => true]);
         }
 
-        $namaPasien = ['Siti Aminah', 'Budi Santoso', 'Rina Wulandari', 'Agus Pratama', 'Dewi Lestari',
-            'Joko Susilo', 'Maya Sari', 'Hendra Wijaya', 'Nur Aini', 'Fajar Nugroho'];
-        foreach ($namaPasien as $i => $nama) {
-            Pasien::firstOrCreate(['kode_pasien' => sprintf('P-%04d', $i + 1)], ['nama' => $nama]);
+        // Data fiktif untuk demo (NIK bukan NIK asli).
+        $namaPasien = [
+            ['Siti Aminah', 'P', '1978-02-14', 'Jl. Melati No. 3, Malang'],
+            ['Budi Santoso', 'L', '1965-07-21', 'Jl. Kenanga No. 10, Malang'],
+            ['Rina Wulandari', 'P', '1992-11-05', 'Jl. Anggrek No. 7, Batu'],
+            ['Agus Pratama', 'L', '1988-03-30', 'Jl. Mawar No. 1, Malang'],
+            ['Dewi Lestari', 'P', '2001-09-17', 'Jl. Dahlia No. 22, Malang'],
+            ['Joko Susilo', 'L', '1959-12-02', 'Jl. Cempaka No. 5, Kepanjen'],
+            ['Maya Sari', 'P', '2015-06-08', 'Jl. Teratai No. 9, Malang'],
+            ['Hendra Wijaya', 'L', '1980-01-25', 'Jl. Flamboyan No. 14, Batu'],
+            ['Nur Aini', 'P', '1996-04-19', 'Jl. Kamboja No. 2, Malang'],
+            ['Fajar Nugroho', 'L', '2018-10-11', 'Jl. Bougenvil No. 6, Malang'],
+        ];
+        foreach ($namaPasien as $i => [$nama, $jk, $lahir, $alamat]) {
+            Pasien::firstOrCreate(['kode_pasien' => sprintf('P-%04d', $i + 1)], [
+                'nama' => $nama, 'nik' => sprintf('357300%010d', $i + 1), 'jenis_kelamin' => $jk,
+                'tanggal_lahir' => $lahir, 'alamat' => $alamat, 'no_hp' => sprintf('0812-3456-%04d', $i + 1),
+            ]);
         }
 
         if (IdentitasPasien::doesntExist()) {

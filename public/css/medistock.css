@@ -203,3 +203,10 @@
 .bar span { display: block; height: 100%; background: #155eef; }
 .obat-cari { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
 .obat-cari input, .obat-cari select { flex: 1; min-width: 180px; width: auto !important; }
+
+/* Identitas: penyelesaian menjadi pasien tetap (FR-07) */
+.form-jadikan { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccd5e0; display: flex; flex-direction: column; gap: 6px; }
+.form-jadikan label { font-size: 13px; font-weight: 600; margin: 0; }
+.form-jadikan select { width: 100%; padding: 6px 8px; border: 1px solid #ccd5e0; border-radius: 6px; font: inherit; font-size: 13px; }
+.form-jadikan button { align-self: flex-start; }
+.teks-peringatan { color: #a15c00; }
