@@ -7,6 +7,7 @@ use App\Models\Pembelian;
 use App\Models\Penerimaan;
 use App\Models\Supplier;
 use App\Services\StokObatService;
+use App\Support\Relasi;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -16,21 +17,40 @@ class PembelianController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
+        $daftarSupplier = Supplier::orderBy('nama_supplier')->get();
+        $daftarObat = Obat::orderBy('nama_obat')->get();
+
+        $riwayat = Pembelian::with('penerimaan')
+            ->when(array_key_exists((string) $status, Pembelian::STATUS), fn ($q) => $q->where('status', $status))
+            ->orderByRaw("CASE WHEN status IN ('dipesan','sebagian') THEN 0 ELSE 1 END")
+            ->latest('id')->limit(50)->get();
+        $penerimaanTerakhir = Penerimaan::latest('id')->limit(10)->get();
+
+        // Relasi dipasang dari data yang sudah dimuat (hemat query ke database awan).
+        $pesanan = Relasi::pasang($penerimaanTerakhir, 'pembelian_id', 'pembelian', $riwayat, Pembelian::class);
+        Relasi::pasang($riwayat->concat($pesanan->values()), 'supplier_id', 'supplier', $daftarSupplier, Supplier::class);
+        Relasi::pasang($riwayat->concat($pesanan->values()), 'obat_id', 'obat', $daftarObat, Obat::class);
+        Relasi::pasang($penerimaanTerakhir, 'user_id', 'petugas', collect(), \App\Models\User::class);
+
+        // Tiga angka ringkasan dalam satu query
+        $angka = Pembelian::selectRaw("
+            SUM(CASE WHEN status IN ('dipesan','sebagian') THEN 1 ELSE 0 END) AS menunggu,
+            SUM(CASE WHEN status <> 'batal' THEN 1 ELSE 0 END) AS jumlah,
+            SUM(CASE WHEN status <> 'batal' THEN total_harga ELSE 0 END) AS nilai")->toBase()->first();
+
+        $terimaId = $request->user()->can('pengadaan.terima') && $request->filled('terima') ? (int) $request->query('terima') : null;
+        $terima = $terimaId ? ($riwayat->firstWhere('id', $terimaId) ?? Pembelian::with(['obat', 'supplier'])->find($terimaId)) : null;
 
         return view('pembelian.index', [
-            'daftarSupplier' => Supplier::where('aktif', true)->orderBy('nama_supplier')->get(),
-            'daftarObat' => Obat::aktif()->orderBy('nama_obat')->get(),
-            'riwayat' => Pembelian::with(['supplier', 'obat', 'penerimaan'])
-                ->when(array_key_exists((string) $status, Pembelian::STATUS), fn ($q) => $q->where('status', $status))
-                ->orderByRaw("CASE WHEN status IN ('dipesan','sebagian') THEN 0 ELSE 1 END")
-                ->latest('id')->limit(50)->get(),
+            'daftarSupplier' => $daftarSupplier->where('aktif', true)->values(),
+            'daftarObat' => $daftarObat->where('aktif', true)->values(),
+            'riwayat' => $riwayat,
             'status' => $status,
-            'jumlahMenunggu' => Pembelian::whereIn('status', ['dipesan', 'sebagian'])->count(),
-            'jumlahTransaksi' => Pembelian::where('status', '<>', 'batal')->count(),
-            'nilaiPembelian' => (float) Pembelian::where('status', '<>', 'batal')->sum('total_harga'),
-            'penerimaanTerakhir' => Penerimaan::with(['pembelian.obat', 'petugas'])->latest('id')->limit(10)->get(),
-            'terima' => $request->user()->can('pengadaan.terima') && $request->filled('terima')
-                ? Pembelian::with(['obat', 'supplier'])->find($request->query('terima')) : null,
+            'jumlahMenunggu' => (int) $angka->menunggu,
+            'jumlahTransaksi' => (int) $angka->jumlah,
+            'nilaiPembelian' => (float) $angka->nilai,
+            'penerimaanTerakhir' => $penerimaanTerakhir,
+            'terima' => $terima,
             // Diisi otomatis dari tombol "Buat pesanan" di halaman rekomendasi (UC-11 -> UC-04)
             'pilihObat' => (int) $request->query('obat_id'),
             'isiJumlah' => (int) $request->query('jumlah') ?: null,

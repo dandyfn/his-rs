@@ -13,7 +13,10 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Ini Rumah Sakit'),
+
+    // Tagline rumah sakit di header dan halaman login
+    'tagline' => env('APP_TAGLINE', 'Datang Karena Sakit, Pulang Karena Ga Kuat Bayar'),
 
     /*
     |--------------------------------------------------------------------------

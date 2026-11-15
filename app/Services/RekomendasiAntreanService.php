@@ -13,11 +13,11 @@ use Illuminate\Support\Collection;
  */
 class RekomendasiAntreanService
 {
-    public function analisisHariIni(): Collection
+    /** @param  Collection|null  $antrean  antrean hari ini yang sudah dimuat (opsional, hemat query) */
+    public function analisisHariIni(?Collection $antrean = null): Collection
     {
-        $antreanHariIni = Antrean::whereDate('tanggal_kunjungan', today())
+        $antreanHariIni = ($antrean ?? Antrean::whereDate('tanggal_kunjungan', today())->get())
             ->where('status', '<>', 'batal')
-            ->get()
             ->groupBy('poli_id');
 
         return Poli::where('aktif', true)->orderBy('nama_poli')->get()

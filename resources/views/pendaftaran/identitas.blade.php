@@ -118,7 +118,7 @@
                                         @csrf
                                         <label for="pasien_id_{{ $r->id }}">Jadikan pasien tetap</label>
                                         <select id="pasien_id_{{ $r->id }}" name="pasien_id">
-                                            <option value="">+ Buat pasien baru ({{ \App\Models\Pasien::kodeBerikutnya() }})</option>
+                                            <option value="">+ Buat pasien baru ({{ $kodeBaru }})</option>
                                             @foreach ($kandidat[$r->id] ?? [] as $k)
                                                 <option value="{{ $k->id }}">⚠ Cocok ({{ $k->alasan_cocok }}): {{ $k->kode_pasien }} - {{ $k->nama }}</option>
                                             @endforeach

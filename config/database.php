@@ -97,6 +97,13 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Koneksi persisten: koneksi SSL ke database awan (Aiven) dipakai ulang antar-request,
+            // jadi tidak perlu "jabat tangan" ulang setiap pindah halaman. Aktifkan dengan DB_PERSISTENT=true.
+            // Emulate prepares: 1 kali bolak-balik per query (bukan 2: prepare lalu execute).
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_PERSISTENT => (bool) env('DB_PERSISTENT', false),
+                PDO::ATTR_EMULATE_PREPARES => (bool) env('DB_EMULATE_PREPARES', false),
+            ] : [],
         ],
 
         'sqlsrv' => [

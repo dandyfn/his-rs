@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - {{ config('app.name') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/medistock.css') }}">
 </head>
@@ -15,12 +16,10 @@
 <div class="login-wrap">
     <section class="obat-card login-card">
         <div class="login-logo">
-            <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
-                <rect width="36" height="36" rx="9" fill="#155eef"/>
-                <path d="M15 8h6v7h7v6h-7v7h-6v-7H8v-6h7z" fill="#fff"/>
-            </svg>
+            <img src="{{ asset('images/logo-irs.png') }}" alt="Logo {{ config('app.name') }}" width="52" height="47">
             <h1>{{ config('app.name') }}</h1>
         </div>
+        <p class="login-tagline">{{ config('app.tagline') }}</p>
         <p class="teks-bantu">Hospital Information System. Masuk dengan akun sesuai peran Anda.</p>
 
         @if ($errors->any())

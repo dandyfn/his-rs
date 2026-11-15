@@ -34,7 +34,9 @@ class IdentitasPasienController extends Controller
 
         $edit = $request->filled('edit') ? IdentitasPasien::whereNull('pasien_id')->find($request->query('edit')) : null;
 
-        return view('pendaftaran.identitas', compact('daftar', 'cari', 'kandidat', 'semuaPasien', 'edit'));
+        $kodeBaru = $kandidat->isNotEmpty() ? Pasien::kodeBerikutnya() : null;
+
+        return view('pendaftaran.identitas', compact('daftar', 'cari', 'kandidat', 'semuaPasien', 'edit', 'kodeBaru'));
     }
 
     public function store(Request $request, IdentitasPasienService $service)

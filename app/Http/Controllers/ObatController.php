@@ -6,9 +6,10 @@ use App\Models\BatchObat;
 use App\Models\Obat;
 use App\Models\RiwayatHarga;
 use App\Models\TransaksiStok;
+use App\Models\User;
+use App\Support\Relasi;
 use App\Services\StokObatService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -21,20 +22,30 @@ class ObatController extends Controller
             ->orderByDesc('aktif')->orderBy('nama_obat')->get();
         $batas = config('hak_akses.batas_kedaluwarsa_hari');
 
+        // Relasi dipasang dari data yang sudah dimuat supaya halaman ini cukup sedikit query (database di awan).
+        $daftarBatch = BatchObat::where('sisa', '>', 0)->orderBy('tanggal_kedaluwarsa')->get();
+        $riwayat = TransaksiStok::latest('id')->limit(20)->get();
+        $riwayatHarga = RiwayatHarga::latest('id')->limit(10)->get();
+        Relasi::pasang($daftarBatch, 'obat_id', 'obat', $daftarObat, Obat::class);
+        Relasi::pasang($riwayat, 'obat_id', 'obat', $daftarObat, Obat::class);
+        Relasi::pasang($riwayatHarga, 'obat_id', 'obat', $daftarObat, Obat::class);
+        Relasi::pasang($riwayat, 'batch_id', 'batch', $daftarBatch, BatchObat::class);
+        $pengguna = Relasi::pasang($riwayat, 'user_id', 'petugas', collect(), User::class);
+        Relasi::pasang($riwayatHarga, 'user_id', 'petugas', $pengguna, User::class);
+
         return view('obat.index', [
             'daftarObat' => $daftarObat,
             'ringkasan' => [
                 'jumlah_jenis' => $daftarObat->where('aktif', true)->count(),
                 'total_stok' => $daftarObat->sum('stok'),
                 'perlu_pengadaan' => $daftarObat->where('aktif', true)->filter->perluDitinjau()->count(),
-                'mendekati_kedaluwarsa' => BatchObat::where('sisa', '>', 0)
-                    ->whereDate('tanggal_kedaluwarsa', '<=', today()->addDays($batas))->count(),
+                'mendekati_kedaluwarsa' => $daftarBatch->filter(fn ($b) => $b->tanggal_kedaluwarsa->lte(today()->addDays($batas)))->count(),
             ],
             'batas' => $batas,
-            'daftarBatch' => BatchObat::with('obat')->where('sisa', '>', 0)->orderBy('tanggal_kedaluwarsa')->get(),
-            'riwayat' => TransaksiStok::with(['obat', 'batch', 'petugas'])->latest('id')->limit(20)->get(),
-            'riwayatHarga' => RiwayatHarga::with(['obat', 'petugas'])->latest('id')->limit(10)->get(),
-            'edit' => $request->user()->can('obat.kelola') && $request->filled('edit') ? Obat::find($request->query('edit')) : null,
+            'daftarBatch' => $daftarBatch,
+            'riwayat' => $riwayat,
+            'riwayatHarga' => $riwayatHarga,
+            'edit' => $request->user()->can('obat.kelola') && $request->filled('edit') ? $daftarObat->firstWhere('id', (int) $request->query('edit')) : null,
         ]);
     }
 
