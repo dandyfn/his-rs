@@ -83,7 +83,7 @@ class StokObatService
         }
 
         return Pembelian::create([
-            'nomor_pembelian' => 'PO-' . now()->format('ymdHis') . '-' . random_int(100, 999),
+            'nomor_pembelian' => $this->nomorUnik('PO', Pembelian::class, 'nomor_pembelian'),
             'supplier_id' => $data['supplier_id'],
             'obat_id' => $obat->id,
             'jumlah' => $data['jumlah'],
@@ -116,7 +116,7 @@ class StokObatService
             $obat = Obat::lockForUpdate()->findOrFail($pesanan->obat_id);
 
             $penerimaan = Penerimaan::create([
-                'nomor_penerimaan' => 'GR-' . now()->format('ymdHis') . '-' . random_int(100, 999),
+                'nomor_penerimaan' => $this->nomorUnik('GR', Penerimaan::class, 'nomor_penerimaan'),
                 'pembelian_id' => $pesanan->id,
                 'jumlah' => $data['jumlah'],
                 'nomor_batch' => strtoupper(trim($data['nomor_batch'])),
@@ -190,7 +190,7 @@ class StokObatService
             }
 
             $penjualan = Penjualan::create([
-                'nomor_penjualan' => 'PJ-' . now()->format('Ymd-His') . '-' . random_int(100, 999),
+                'nomor_penjualan' => $this->nomorUnik('PJ', Penjualan::class, 'nomor_penjualan'),
                 'pasien_id' => $header['pasien_id'],
                 'nama_pembeli' => $header['nama_pembeli'],
                 'jenis' => $header['jenis'],
@@ -223,7 +223,7 @@ class StokObatService
             $obat = Obat::lockForUpdate()->findOrFail($batch->obat_id);
 
             $retur = ReturObat::create([
-                'nomor_retur' => 'RT-' . now()->format('ymdHis') . '-' . random_int(100, 999),
+                'nomor_retur' => $this->nomorUnik('RT', ReturObat::class, 'nomor_retur'),
                 'obat_id' => $obat->id,
                 'batch_id' => $batch->id,
                 'jumlah' => $data['jumlah'],
@@ -241,6 +241,19 @@ class StokObatService
     }
 
     // ------------------------------------------------------------ Internal
+
+    /**
+     * Nomor transaksi unik, contoh PJ-261115-7K3QX. Dicek ke database supaya
+     * dua transaksi di detik yang sama tidak mendapat nomor kembar.
+     */
+    private function nomorUnik(string $awalan, string $model, string $kolom): string
+    {
+        do {
+            $nomor = $awalan . '-' . now()->format('ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(5));
+        } while ($model::where($kolom, $nomor)->exists());
+
+        return $nomor;
+    }
 
     private function tambahKeBatch(Obat $obat, string $nomorBatch, string $kedaluwarsa, int $jumlah,
         ?int $penerimaanId, string $sumber, string $keterangan, ?int $referensiId, ?int $userId): BatchObat

@@ -15,12 +15,11 @@
 
 <div class="login-wrap">
     <section class="obat-card login-card">
-        <div class="login-logo">
-            <img src="{{ asset('images/logo-irs.png') }}" alt="Logo {{ config('app.name') }}" width="52" height="47">
+        <div class="login-kepala">
+            <img src="{{ asset('images/logo-irs.png') }}" alt="Logo {{ config('app.name') }}" class="login-logo-besar" width="96" height="86">
             <h1>{{ config('app.name') }}</h1>
+            <p>Hospital Information System. Masuk dengan akun sesuai peran Anda.</p>
         </div>
-        <p class="login-tagline">{{ config('app.tagline') }}</p>
-        <p class="teks-bantu">Hospital Information System. Masuk dengan akun sesuai peran Anda.</p>
 
         @if ($errors->any())
             <div class="obat-alert error">{{ $errors->first() }}</div>

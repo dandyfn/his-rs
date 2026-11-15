@@ -298,3 +298,16 @@ body.halaman-login { margin: 0; min-height: 100vh; background: radial-gradient(1
 .login-logo img { width: 52px; height: 47px; object-fit: contain; flex: none; }
 .login-logo h1 { font-weight: 600; }
 .login-tagline { margin: 2px 0 10px; color: #475467; font-size: 14px; }
+
+/* ===== Latar halaman: motif medis biru muda (sudah disamarkan 55%) ===== */
+body.halaman-app { background: #f4f8fc url('../images/latar-web.jpg') center / cover no-repeat fixed; }
+@media (max-width: 768px) {
+    /* background "fixed" sering bermasalah di browser HP */
+    body.halaman-app { background-attachment: scroll; background-size: auto 100vh; background-repeat: repeat-y; }
+}
+
+/* ===== Login: logo di tengah atas ===== */
+.login-kepala { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin-bottom: 18px; }
+.login-logo-besar { width: 96px; height: 86px; object-fit: contain; }
+.login-kepala h1 { margin: 6px 0 0; font-size: 26px; font-weight: 600; color: #12345a; }
+.login-kepala p { margin: 0; font-size: 14px; color: #475467; line-height: 1.5; }

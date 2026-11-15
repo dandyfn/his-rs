@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ asset('css/medistock.css') }}">
     @stack('styles')
 </head>
-<body>
+<body class="halaman-app">
 
 @php
     // Menu per subsistem: [route => [label, izin, ikon]]. Hanya menu yang diizinkan untuk peran pengguna yang tampil (US-11).
