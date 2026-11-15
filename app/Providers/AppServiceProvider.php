@@ -9,21 +9,20 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        // Hak akses khusus admin: manajemen pengguna dan pengubahan data poli.
+        // Administrator sistem: semua akses.
         Gate::define('admin', fn (User $user) => $user->role === 'admin');
+
+        // Hak akses per peran (config/hak_akses.php) -> Gate, dipakai di route, menu, dan view.
+        foreach (config('hak_akses.izin') as $izin => $peran) {
+            Gate::define($izin, fn (User $user) => $user->role === 'admin' || in_array($user->role, $peran, true));
+        }
 
         // Nama hari dan bulan dalam bahasa Indonesia
         Carbon::setLocale('id');

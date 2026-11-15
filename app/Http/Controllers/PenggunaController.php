@@ -22,7 +22,7 @@ class PenggunaController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'username' => ['required', 'string', 'min:4', 'max:50', 'regex:/^[A-Za-z0-9_.]+$/', Rule::unique('users', 'username')],
             'password' => ['required', 'confirmed', Password::min(8)],
-            'role' => ['required', Rule::in(['admin', 'petugas'])],
+            'role' => ['required', Rule::in(array_keys(config('hak_akses.peran')))],
         ], [
             'username.unique' => 'Username sudah digunakan.',
             'username.regex' => 'Username hanya boleh huruf, angka, titik, dan garis bawah.',

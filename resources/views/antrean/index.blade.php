@@ -17,6 +17,7 @@
         </div>
     </section>
 
+    @can('antrean.daftar')
     <section class="obat-card">
         <h3>Formulir Pendaftaran Antrean</h3>
         <form method="POST" action="{{ route('antrean.store') }}">
@@ -45,6 +46,7 @@
             <button type="submit">Daftarkan Antrean</button>
         </form>
     </section>
+    @endcan
 
     <section class="obat-card">
         <h3>Daftar Antrean Hari Ini</h3>
@@ -60,7 +62,7 @@
         </form>
         <div class="obat-scroll">
             <table class="obat-table">
-                <thead><tr><th>No. Antrean</th><th>Kode Pasien</th><th>Nama Pasien</th><th>Poli</th><th>Status</th><th>Tindakan</th></tr></thead>
+                <thead><tr><th>No. Antrean</th><th>Kode Pasien</th><th>Nama Pasien</th><th>Poli</th><th>Status</th>@can('antrean.layani')<th>Tindakan</th>@endcan</tr></thead>
                 <tbody>
                 @forelse ($daftar as $a)
                     <tr>
@@ -69,6 +71,7 @@
                         <td>{{ $a->pasien->nama }}</td>
                         <td>{{ $a->poli->nama_poli }}</td>
                         <td><span class="badge {{ $a->kelasStatus() }}">{{ $a->status }}</span></td>
+                        @can('antrean.layani')
                         <td>
                             <div class="aksi-baris">
                                 @php
@@ -93,6 +96,7 @@
                                 @endif
                             </div>
                         </td>
+                        @endcan
                     </tr>
                 @empty
                     <tr><td colspan="6">Belum ada antrean hari ini.</td></tr>

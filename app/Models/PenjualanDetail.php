@@ -11,10 +11,20 @@ class PenjualanDetail extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['penjualan_id', 'obat_id', 'jumlah', 'harga_satuan', 'subtotal'];
+    protected $fillable = ['penjualan_id', 'obat_id', 'batch_id', 'jumlah', 'harga_satuan', 'subtotal'];
 
     public function obat(): BelongsTo
     {
         return $this->belongsTo(Obat::class);
+    }
+
+    public function penjualan(): BelongsTo
+    {
+        return $this->belongsTo(Penjualan::class);
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(BatchObat::class);
     }
 }

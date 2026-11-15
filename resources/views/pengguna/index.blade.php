@@ -3,7 +3,7 @@
 
 @section('content')
     <h2>Manajemen Pengguna</h2>
-    <p class="teks-bantu">Kelola akun petugas yang dapat masuk ke sistem. Halaman ini hanya untuk admin.</p>
+    <p class="teks-bantu">Kelola akun yang dapat masuk ke sistem. Menu yang tampil untuk setiap akun mengikuti perannya. Halaman ini hanya untuk admin.</p>
 
     <section class="obat-card">
         <h3>Tambah Akun Pengguna</h3>
@@ -15,8 +15,9 @@
                 <div>
                     <label for="role">Role *</label>
                     <select id="role" name="role" required>
-                        <option value="petugas" @selected(old('role') === 'petugas')>Petugas</option>
-                        <option value="admin" @selected(old('role') === 'admin')>Admin</option>
+                        @foreach (config('hak_akses.peran') as $kode => $label)
+                            <option value="{{ $kode }}" @selected(old('role') === $kode)>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div><label for="password">Password * (min. 8 karakter)</label><input type="password" id="password" name="password" required minlength="8" autocomplete="new-password"></div>
@@ -38,7 +39,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $u->name }}</td>
                         <td>{{ $u->username }}</td>
-                        <td><span class="badge {{ $u->role === 'admin' ? 'badge-biru' : 'badge-abu' }}">{{ $u->role }}</span></td>
+                        <td><span class="badge {{ $u->role === 'admin' ? 'badge-biru' : 'badge-abu' }}">{{ $u->labelPeran() }}</span></td>
                         <td><span class="badge {{ $u->aktif ? 'badge-hijau' : 'badge-merah' }}">{{ $u->aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                         <td>
                             @if ($u->id === auth()->id())

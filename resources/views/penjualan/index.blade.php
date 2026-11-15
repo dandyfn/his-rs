@@ -16,8 +16,10 @@
         </div>
     </section>
 
+    @can('penjualan.buat')
     <section class="obat-card">
         <h3>Transaksi Penjualan Baru</h3>
+        <p class="teks-bantu">Stok yang ditampilkan adalah stok layak jual. Sistem otomatis mengambil dari batch dengan tanggal kedaluwarsa paling dekat (FEFO).</p>
         <form method="POST" action="{{ route('penjualan.store') }}" id="formPenjualan">
             @csrf
             <div class="obat-grid">
@@ -61,6 +63,50 @@
             <button type="submit">Simpan penjualan dan cetak struk</button>
         </form>
     </section>
+    @endcan
+
+    {{-- FR-12: riwayat pembelian obat per pasien --}}
+    <section class="obat-card" id="riwayat-pasien">
+        <h3>Riwayat Pembelian Obat per Pasien</h3>
+        <form class="obat-cari" method="GET" action="{{ route('penjualan.index') }}#riwayat-pasien">
+            <select name="pasien_id" required>
+                <option value="">-- Pilih pasien --</option>
+                @foreach ($daftarPasien as $p)
+                    <option value="{{ $p->id }}" @selected($pasienDipilih?->id === $p->id)>{{ $p->kode_pasien }} - {{ $p->nama }}</option>
+                @endforeach
+            </select>
+            <button type="submit">Lihat riwayat</button>
+        </form>
+        @if ($pasienDipilih)
+            <p class="teks-bantu">
+                <strong>{{ $pasienDipilih->kode_pasien }} - {{ $pasienDipilih->nama }}</strong>:
+                {{ $riwayatPasien->count() }} transaksi, total Rp {{ number_format($riwayatPasien->sum('total'), 0, ',', '.') }}.
+            </p>
+            <div class="obat-scroll">
+                <table class="obat-table">
+                    <thead><tr><th>Waktu</th><th>Nomor</th><th>Jenis</th><th>Obat</th><th>Total</th><th></th></tr></thead>
+                    <tbody>
+                    @forelse ($riwayatPasien as $r)
+                        <tr>
+                            <td>{{ $r->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $r->nomor_penjualan }}</td>
+                            <td>{{ $r->jenis === 'resep' ? 'Resep ' . $r->nomor_resep : 'Tanpa resep' }}</td>
+                            <td>
+                                @foreach ($r->detail->groupBy('obat_id') as $baris)
+                                    {{ $baris->first()->obat->nama_obat }} × {{ $baris->sum('jumlah') }}@if (! $loop->last)<br>@endif
+                                @endforeach
+                            </td>
+                            <td>Rp {{ number_format($r->total, 0, ',', '.') }}</td>
+                            <td><a class="btn-garis btn-kecil" href="{{ route('penjualan.struk', $r) }}">Struk</a></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6">Pasien ini belum pernah membeli obat.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </section>
 
     <section class="obat-card">
         <h3>Riwayat Penjualan Terakhir</h3>
@@ -97,8 +143,9 @@
                 <select name="obat_id[]" class="pilihObat" required>
                     <option value="">Pilih obat</option>
                     @foreach ($daftarObat as $o)
-                        <option value="{{ $o->id }}" data-stok="{{ $o->stok }}" data-harga="{{ (float) $o->harga_jual }}" data-satuan="{{ $o->satuan }}" @disabled($o->stok === 0)>
-                            {{ $o->nama_obat }}{{ $o->stok === 0 ? ' (stok habis)' : '' }}
+                        @php $layak = (int) $o->stok_layak; @endphp
+                        <option value="{{ $o->id }}" data-stok="{{ $layak }}" data-harga="{{ (float) $o->harga_jual }}" data-satuan="{{ $o->satuan }}" @disabled($layak === 0)>
+                            {{ $o->nama_obat }}{{ $layak === 0 ? ' (stok habis)' : '' }}
                         </option>
                     @endforeach
                 </select>
@@ -116,6 +163,7 @@
 <script>
 const rupiah = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
 const tbody = document.getElementById('barisItem');
+if (tbody) {
 
 function hitung() {
     let total = 0;
@@ -163,5 +211,6 @@ function aturResep() {
 jenis.addEventListener('change', aturResep);
 aturResep();
 tambahBaris();
+}
 </script>
 @endpush

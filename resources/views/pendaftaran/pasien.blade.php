@@ -5,6 +5,7 @@
     <h2>Data Pasien</h2>
     <p class="teks-bantu">Kelola data induk pasien yang dipakai oleh pendaftaran antrean dan penjualan obat.</p>
 
+    @can('pasien.kelola')
     <section class="obat-card">
         <h3>{{ $edit ? 'Edit Data Pasien' : 'Tambah Pasien Baru' }}</h3>
         <form method="POST" action="{{ $edit ? route('pasien.update', $edit) : route('pasien.store') }}">
@@ -53,6 +54,7 @@
             @endif
         </form>
     </section>
+    @endcan
 
     <section class="obat-card">
         <h3>Daftar Pasien</h3>
@@ -62,7 +64,7 @@
         </form>
         <div class="obat-scroll">
             <table class="obat-table">
-                <thead><tr><th>No.</th><th>Kode</th><th>Nama</th><th>NIK</th><th>JK / Umur</th><th>No. HP</th><th>Alamat</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>No.</th><th>Kode</th><th>Nama</th><th>NIK</th><th>JK / Umur</th><th>No. HP</th><th>Alamat</th>@can('pasien.kelola')<th>Aksi</th>@endcan</tr></thead>
                 <tbody>
                 @forelse ($daftar as $p)
                     <tr>
@@ -78,7 +80,7 @@
                         <td>{{ $p->labelJenisKelamin() }}{{ $p->umur() !== null ? ' / ' . $p->umur() . ' th' : '' }}</td>
                         <td>{{ $p->no_hp ?: '-' }}</td>
                         <td>{{ $p->alamat ?: '-' }}</td>
-                        <td><a class="btn-garis btn-kecil" href="{{ route('pasien.index', ['edit' => $p->id]) }}">Edit</a></td>
+                        @can('pasien.kelola')<td><a class="btn-garis btn-kecil" href="{{ route('pasien.index', ['edit' => $p->id]) }}">Edit</a></td>@endcan
                     </tr>
                 @empty
                     <tr><td colspan="8">{{ $cari !== '' ? 'Pasien tidak ditemukan.' : 'Belum ada data pasien.' }}</td></tr>

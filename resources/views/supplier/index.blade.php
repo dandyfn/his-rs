@@ -14,6 +14,7 @@
         </div>
     </section>
 
+    @can('supplier.kelola')
     <section class="obat-card">
         <h3>Tambah Supplier</h3>
         <form method="POST" action="{{ route('supplier.store') }}">
@@ -40,13 +41,14 @@
             <button type="submit">Simpan Supplier</button>
         </form>
     </section>
+    @endcan
 
     <section class="obat-card">
         <h3>Daftar Supplier</h3>
         <div class="obat-scroll">
             <table class="obat-table">
                 <thead>
-                    <tr><th>No.</th><th>Kode Supplier</th><th>Nama Supplier</th><th>Kontak</th><th>Alamat</th><th>Status</th><th>Aksi</th></tr>
+                    <tr><th>No.</th><th>Kode Supplier</th><th>Nama Supplier</th><th>Kontak</th><th>Alamat</th><th>Status</th>@can('supplier.kelola')<th>Aksi</th>@endcan</tr>
                 </thead>
                 <tbody>
                 @forelse ($daftar as $s)
@@ -63,6 +65,7 @@
                                 <span class="badge badge-abu">Nonaktif</span>
                             @endif
                         </td>
+                        @can('supplier.kelola')
                         <td>
                             <form method="POST" action="{{ route('supplier.toggle', $s) }}">
                                 @csrf
@@ -70,6 +73,7 @@
                                 <button type="submit" class="btn-garis btn-kecil">{{ $s->aktif ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                             </form>
                         </td>
+                        @endcan
                     </tr>
                 @empty
                     <tr><td colspan="7">Belum ada data supplier.</td></tr>

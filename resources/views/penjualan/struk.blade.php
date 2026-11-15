@@ -42,7 +42,7 @@
     <div class="garis"></div>
     <table>
         @foreach ($jual->detail as $d)
-            <tr><td colspan="2">{{ $d->obat->nama_obat }}</td></tr>
+            <tr><td colspan="2">{{ $d->obat->nama_obat }}@if ($d->batch)<br><small>&nbsp;&nbsp;Batch {{ $d->batch->nomor_batch }} · ED {{ $d->batch->tanggal_kedaluwarsa->format('d/m/Y') }}</small>@endif</td></tr>
             <tr>
                 <td>&nbsp;&nbsp;{{ $d->jumlah }} {{ $d->obat->satuan }} x Rp {{ number_format($d->harga_satuan, 0, ',', '.') }}</td>
                 <td class="kanan">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</td>

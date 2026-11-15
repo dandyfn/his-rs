@@ -210,3 +210,63 @@
 .form-jadikan select { width: 100%; padding: 6px 8px; border: 1px solid #ccd5e0; border-radius: 6px; font: inherit; font-size: 13px; }
 .form-jadikan button { align-self: flex-start; }
 .teks-peringatan { color: #a15c00; }
+
+/* ===== MediStock tahap 2: batch, pengadaan, analisis, laporan, peran ===== */
+.nav-akun { display: inline-flex; flex-direction: column; line-height: 1.15; padding: 4px 10px; margin-left: 6px;
+    border-left: 1px solid rgba(255,255,255,.25); font-size: 13px; color: #fff; }
+.nav-akun small { font-size: 11px; opacity: .75; }
+.baris-nonaktif td { color: #98a2b3; }
+.obat-card.sorot { border: 2px solid #155eef; box-shadow: 0 6px 24px rgba(21,94,239,.12); }
+.obat-info { background: #eef4ff; color: #1246b8; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+.btn-tautan { display: inline-block; background: #155eef; color: #fff !important; text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+.cek-inline { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; white-space: nowrap; }
+.cek-inline input { width: auto !important; }
+.lebar-2 { grid-column: span 2; }
+@media (max-width: 700px) { .lebar-2 { grid-column: auto; } }
+[hidden] { display: none !important; }
+
+/* Grafik pemakaian (FR-13): satu seri, satu warna, grid samar */
+.grafik-wrap { width: 100%; overflow-x: auto; }
+.grafik { width: 100%; min-width: 520px; height: auto; display: block; }
+.grafik-grid { stroke: #e4eaf2; stroke-width: 1; }
+.grafik-dasar { stroke: #98a2b3; stroke-width: 1; }
+.grafik-sumbu { fill: #667085; font-size: 12px; }
+.grafik-nilai { fill: #344054; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity .15s; }
+.grafik-batang { fill: #155eef; transition: fill .15s; }
+.grafik-batang.berjalan { fill: #9db8f7; }
+.grafik-batang-grup:hover .grafik-batang { fill: #1246b8; }
+.grafik-batang-grup:hover .grafik-nilai, .grafik-batang-grup.puncak .grafik-nilai { opacity: 1; }
+.top-obat { display: grid; gap: 10px; }
+.top-baris { display: grid; grid-template-columns: minmax(140px, 220px) 1fr 110px; align-items: center; gap: 12px; font-size: 14px; }
+.top-bar { height: 12px; background: #eef2f7; border-radius: 6px; overflow: hidden; }
+.top-bar span { display: block; height: 100%; background: #155eef; border-radius: 0 4px 4px 0; }
+.top-nilai { text-align: right; color: #344054; font-variant-numeric: tabular-nums; }
+
+/* Laporan + cetak / simpan PDF (FR-15) */
+.obat-filter input[type=date] { width: auto; padding: 7px 8px; border: 1px solid #ccd5e0; border-radius: 7px; font: inherit; }
+.obat-filter .btn-garis { display: inline-block; }
+.kop-laporan { border-bottom: 2px solid #172b4d; padding-bottom: 10px; margin-bottom: 14px; }
+.kop-laporan h3 { margin: 4px 0; }
+@media print {
+    .main-header, .tidak-cetak, .obat-alert { display: none !important; }
+    body { background: #fff; }
+    .obat-wrap { max-width: none; padding: 0; margin: 0; }
+    .obat-card { box-shadow: none; border: none; padding: 0; }
+    .obat-scroll { overflow: visible; }
+    .obat-table { font-size: 11px; }
+    .obat-table th, .obat-table td { padding: 4px 6px; }
+    @page { size: A4 landscape; margin: 12mm; }
+}
+
+/* ===== Halaman login: latar jaringan saraf (neural network) ===== */
+body.halaman-login { margin: 0; min-height: 100vh; background: radial-gradient(1200px 700px at 20% 10%, #1d4ed8 0%, #0b1f44 55%, #050d1f 100%); overflow: hidden; }
+#jaringan { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+.halaman-login .login-wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.halaman-login .login-card { width: 100%; max-width: 400px; background: rgba(255,255,255,.94); backdrop-filter: blur(6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.6); }
+.login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.login-logo svg { flex: none; }
+.login-logo h1 { margin: 0; font-size: 26px; }
+.login-catatan { position: fixed; z-index: 1; bottom: 14px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,.55); font-size: 12px; }
+.obat-cari .cek-inline { flex: none; }
+.obat-cari .cek-inline input { flex: none; min-width: 0; width: 16px !important; height: 16px; }

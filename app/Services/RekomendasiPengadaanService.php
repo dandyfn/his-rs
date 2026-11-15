@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Obat;
+use App\Models\TransaksiStok;
 use Illuminate\Support\Collection;
 
 /**
@@ -20,27 +21,48 @@ use Illuminate\Support\Collection;
  *         pantau -> ROP < S <= 1,5 x ROP
  *         aman   -> S > 1,5 x ROP
  *         nodata -> belum ada pemakaian dalam periode
+ *         kurang -> data pemakaian kurang dari 1 bulan (UC-11 alur alternatif)
+ *
+ * Pemakaian = stok keluar karena penjualan (bukan retur / penyesuaian stok).
+ * Obat nonaktif tidak dianalisis.
  */
 class RekomendasiPengadaanService
 {
     public const PERIODE_VALID = [30, 60, 90];
 
-    private const URUTAN = ['pesan' => 0, 'pantau' => 1, 'aman' => 2, 'nodata' => 3];
+    public const MINIMAL_HARI_DATA = 30;
+
+    private const URUTAN = ['pesan' => 0, 'pantau' => 1, 'aman' => 2, 'kurang' => 3, 'nodata' => 4];
 
     public function analisis(int $periode = 90): Collection
     {
         $periode = in_array($periode, self::PERIODE_VALID, true) ? $periode : 90;
         $sejak = now()->subDays($periode);
 
-        $daftar = Obat::query()
-            ->withSum(['transaksiStok as total_keluar' => fn ($q) => $q
-                ->where('jenis', 'keluar')
+        $pemakaian = fn ($q) => $q->where('jenis', 'keluar')->whereIn('sumber', TransaksiStok::SUMBER_PEMAKAIAN);
+
+        $daftar = Obat::aktif()
+            // S = stok layak jual (batch belum kedaluwarsa), karena stok kedaluwarsa tidak bisa dipakai
+            ->withSum(['batch as stok_layak' => fn ($q) => $q->where('sisa', '>', 0)
+                ->whereDate('tanggal_kedaluwarsa', '>=', today())], 'sisa')
+            ->withSum(['transaksiStok as total_keluar' => fn ($q) => $pemakaian($q)
                 ->where('created_at', '>=', $sejak)], 'jumlah')
+            ->withMin(['transaksiStok as pakai_pertama' => $pemakaian], 'created_at')
             ->orderBy('nama_obat')
             ->get();
 
         return $daftar
-            ->map(fn (Obat $obat) => $this->hitung($obat, (int) $obat->total_keluar, $periode))
+            ->map(function (Obat $obat) use ($periode) {
+                $hasil = $this->hitung($obat, (int) $obat->total_keluar, $periode);
+                $pertama = $obat->pakai_pertama ? \Illuminate\Support\Carbon::parse($obat->pakai_pertama) : null;
+                if ($hasil['status'] !== 'nodata' && $pertama && $pertama->gt(now()->subDays(self::MINIMAL_HARI_DATA))) {
+                    $hasil['status'] = 'kurang';
+                    $hasil['saran'] = 0;
+                    $hasil['hari_data'] = (int) $pertama->diffInDays(now());
+                }
+
+                return $hasil;
+            })
             ->sortBy(fn ($r) => [self::URUTAN[$r['status']], $r['habis_hari'] ?? PHP_INT_MAX])
             ->values();
     }
@@ -48,7 +70,7 @@ class RekomendasiPengadaanService
     /** Perhitungan untuk satu obat; dipisah supaya mudah diuji (unit test). */
     public function hitung(Obat $obat, int $totalKeluar, int $periode): array
     {
-        $S = $obat->stok;
+        $S = isset($obat->stok_layak) ? (int) $obat->stok_layak : $obat->stok;
         $L = $obat->lead_time_hari;
         $T = $obat->interval_pesan_hari;
         $d = $totalKeluar / $periode;
@@ -72,6 +94,7 @@ class RekomendasiPengadaanService
 
         return [
             'obat' => $obat,
+            'stok' => $S,
             'pakai_per_hari' => $d,
             'titik_pesan' => (int) ceil($ROP),
             'habis_hari' => $habis,

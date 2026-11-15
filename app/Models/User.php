@@ -30,4 +30,9 @@ class User extends Authenticatable
             'aktif' => 'boolean',
         ];
     }
+
+    public function labelPeran(): string
+    {
+        return config('hak_akses.peran.' . $this->role, $this->role);
+    }
 }

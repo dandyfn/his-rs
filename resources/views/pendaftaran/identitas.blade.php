@@ -8,6 +8,7 @@
         rekomendasi tindak lanjut berbasis aturan, dan riwayat perubahan.
     </p>
 
+    @can('pasien.kelola')
     <section class="obat-card">
         <h3>{{ $edit ? 'Lengkapi / Perbarui Identitas ' . $edit->kode_sementara : 'Daftarkan Identitas Sementara' }}</h3>
         @if ($edit && $edit->status_verifikasi === 'terverifikasi')
@@ -46,6 +47,7 @@
             @endif
         </form>
     </section>
+    @endcan
 
     <section class="obat-card">
         <h3>Daftar Identitas dan Rekomendasi Tindak Lanjut</h3>
@@ -56,7 +58,7 @@
         <div class="obat-scroll">
             <table class="obat-table">
                 <thead>
-                    <tr><th>Kode / Identitas</th><th>Informasi</th><th>Status</th><th>Rekomendasi dan Riwayat</th><th>Tindakan</th></tr>
+                    <tr><th>Kode / Identitas</th><th>Informasi</th><th>Status</th><th>Rekomendasi dan Riwayat</th>@can('pasien.kelola')<th>Tindakan</th>@endcan</tr>
                 </thead>
                 <tbody>
                 @forelse ($daftar as $r)
@@ -95,6 +97,7 @@
                                 @endif
                             </details>
                         </td>
+                        @can('pasien.kelola')
                         <td>
                             @if ($r->pasien_id)
                                 <span class="teks-bantu">Selesai. Lihat di <a href="{{ route('pasien.index', ['cari' => $r->pasien->kode_pasien]) }}">Data Pasien</a>.</span>
@@ -135,6 +138,7 @@
                                 @endif
                             @endif
                         </td>
+                        @endcan
                     </tr>
                 @empty
                     <tr><td colspan="5">{{ $cari !== '' ? 'Identitas tidak ditemukan.' : 'Belum ada identitas sementara.' }}</td></tr>

@@ -20,14 +20,16 @@ class PendaftaranAntreanTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
-    private User $petugas;
+    private User $petugas;   // petugas pendaftaran
+    private User $antrean;   // petugas antrean / poli
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         $this->admin = User::where('username', 'admin')->first();
-        $this->petugas = User::where('username', 'petugas')->first();
+        $this->petugas = User::where('username', 'pendaftaran')->first();
+        $this->antrean = User::where('username', 'antrean')->first();
     }
 
     public function test_semua_halaman_bisa_dibuka(): void
@@ -91,11 +93,11 @@ class PendaftaranAntreanTest extends TestCase
         $antrean = Antrean::where('poli_id', $poli->id)->firstOrFail();
 
         // Tidak boleh langsung "selesai" dari "menunggu"
-        $this->actingAs($this->petugas)->post("/antrean/{$antrean->id}/status", ['aksi' => 'selesai'])
+        $this->actingAs($this->antrean)->post("/antrean/{$antrean->id}/status", ['aksi' => 'selesai'])
             ->assertSessionHasErrors('aksi');
 
         foreach (['panggil', 'mulai', 'selesai'] as $aksi) {
-            $this->actingAs($this->petugas)->post("/antrean/{$antrean->id}/status", ['aksi' => $aksi])
+            $this->actingAs($this->antrean)->post("/antrean/{$antrean->id}/status", ['aksi' => $aksi])
                 ->assertSessionHasNoErrors();
         }
 
@@ -123,7 +125,7 @@ class PendaftaranAntreanTest extends TestCase
 
     public function test_laporan_bisa_diekspor_ke_csv(): void
     {
-        $respon = $this->actingAs($this->petugas)->get('/laporan-antrean/ekspor?tanggal_awal='
+        $respon = $this->actingAs($this->antrean)->get('/laporan-antrean/ekspor?tanggal_awal='
             . today()->subDays(7)->format('Y-m-d') . '&tanggal_akhir=' . today()->format('Y-m-d'));
 
         $respon->assertOk();
@@ -136,10 +138,10 @@ class PendaftaranAntreanTest extends TestCase
         $this->actingAs($this->petugas)->post('/poli', ['nama_poli' => 'Poli X', 'batas_antrean' => 5])->assertForbidden();
 
         $this->actingAs($this->admin)->post('/pengguna', [
-            'name' => 'Kasir Baru', 'username' => 'kasir01', 'role' => 'petugas',
+            'name' => 'Kasir Baru', 'username' => 'kasir01', 'role' => 'apotek',
             'password' => 'rahasia123', 'password_confirmation' => 'rahasia123',
         ])->assertRedirect('/pengguna');
-        $this->assertDatabaseHas('users', ['username' => 'kasir01', 'role' => 'petugas']);
+        $this->assertDatabaseHas('users', ['username' => 'kasir01', 'role' => 'apotek']);
     }
 
     public function test_admin_tidak_bisa_menonaktifkan_akunnya_sendiri_dan_akun_nonaktif_tidak_bisa_login(): void
@@ -150,7 +152,7 @@ class PendaftaranAntreanTest extends TestCase
         $this->assertFalse($this->petugas->fresh()->aktif);
 
         auth()->logout();
-        $this->post('/login', ['username' => 'petugas', 'password' => 'petugas123'])->assertSessionHasErrors('username');
+        $this->post('/login', ['username' => 'pendaftaran', 'password' => 'pendaftaran123'])->assertSessionHasErrors('username');
         $this->assertGuest();
     }
 

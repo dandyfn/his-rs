@@ -12,14 +12,23 @@ use Illuminate\Validation\ValidationException;
 
 class PenjualanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $hariIni = Penjualan::whereDate('created_at', today());
+        $pasienId = (int) $request->query('pasien_id') ?: null;
+        $pasienDipilih = $pasienId ? Pasien::find($pasienId) : null;
 
         return view('penjualan.index', [
             'daftarPasien' => Pasien::orderBy('nama')->get(),
-            'daftarObat' => Obat::orderBy('nama_obat')->get(),
+            // Stok yang ditampilkan = stok layak jual (batch belum kedaluwarsa)
+            'daftarObat' => Obat::aktif()->withSum(['batch as stok_layak' => fn ($q) => $q->where('sisa', '>', 0)
+                ->whereDate('tanggal_kedaluwarsa', '>=', today())], 'sisa')->orderBy('nama_obat')->get(),
             'riwayat' => Penjualan::latest('id')->limit(15)->get(),
+            // FR-12: riwayat pembelian obat per pasien
+            'pasienDipilih' => $pasienDipilih,
+            'riwayatPasien' => $pasienDipilih
+                ? Penjualan::with('detail.obat')->where('pasien_id', $pasienDipilih->id)->latest('id')->get()
+                : collect(),
             'transaksiHariIni' => (clone $hariIni)->count(),
             'omzetHariIni' => (float) (clone $hariIni)->sum('total'),
         ]);
@@ -68,7 +77,7 @@ class PenjualanController extends Controller
 
     public function struk(Penjualan $penjualan)
     {
-        $penjualan->load(['detail.obat', 'petugas']);
+        $penjualan->load(['detail.obat', 'detail.batch', 'petugas']);
 
         return view('penjualan.struk', ['jual' => $penjualan]);
     }

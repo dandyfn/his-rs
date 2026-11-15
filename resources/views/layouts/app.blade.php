@@ -11,26 +11,33 @@
 <body>
 
 @php
+    // Menu per subsistem: [route => [label, izin]]. Hanya menu yang diizinkan untuk peran pengguna yang tampil (US-11).
     $menu = [
         'Pendaftaran' => [
-            'pasien.index' => 'Data Pasien',
-            'identitas.index' => 'Identitas & Verifikasi',
+            'pasien.index' => ['Data Pasien', 'pasien.lihat'],
+            'identitas.index' => ['Identitas & Verifikasi', 'identitas.lihat'],
         ],
         'Antrean' => [
-            'antrean.index' => 'Antrean Hari Ini',
-            'poli.index' => 'Data Poli',
-            'riwayat-antrean.index' => 'Riwayat Status',
-            'rekomendasi-antrean.index' => 'Rekomendasi Antrean',
-            'laporan-antrean.index' => 'Laporan Antrean',
+            'antrean.index' => ['Antrean Hari Ini', 'antrean.lihat'],
+            'poli.index' => ['Data Poli', 'poli.lihat'],
+            'riwayat-antrean.index' => ['Riwayat Status', 'antrean.analisis'],
+            'rekomendasi-antrean.index' => ['Rekomendasi Antrean', 'antrean.analisis'],
+            'laporan-antrean.index' => ['Laporan Antrean', 'antrean.analisis'],
         ],
         'Obat' => [
-            'obat.index' => 'Stok Obat',
-            'supplier.index' => 'Supplier',
-            'pembelian.index' => 'Pembelian Obat',
-            'penjualan.index' => 'Penjualan Obat',
-            'rekomendasi.index' => 'Rekomendasi Pengadaan',
+            'obat.index' => ['Stok Obat', 'obat.lihat'],
+            'batch.index' => ['Batch & Kedaluwarsa', 'obat.lihat'],
+            'supplier.index' => ['Supplier', 'supplier.lihat'],
+            'pembelian.index' => ['Pesanan & Penerimaan', 'pengadaan.lihat'],
+            'penjualan.index' => ['Penjualan Obat', 'penjualan.lihat'],
+            'retur.index' => ['Retur Obat', 'retur'],
+            'analisis.index' => ['Analisis Pemakaian', 'analisis.obat'],
+            'rekomendasi.index' => ['Rekomendasi Pengadaan', 'analisis.obat'],
+            'laporan-obat.index' => ['Laporan Obat', 'laporan.obat'],
         ],
     ];
+    $menu = collect($menu)->map(fn ($item) => collect($item)->filter(fn ($m) => auth()->user()->can($m[1])))
+        ->filter(fn ($item) => $item->isNotEmpty());
     $aktif = fn ($rute) => request()->routeIs(Str::before($rute, '.') . '.*');
 @endphp
 
@@ -46,18 +53,20 @@
 
             @foreach ($menu as $grup => $item)
                 <div class="nav-grup">
-                    <button type="button" @class(['nav-grup-judul', 'active' => collect($item)->keys()->contains($aktif)])>{{ $grup }} ▾</button>
+                    <button type="button" @class(['nav-grup-judul', 'active' => $item->keys()->contains($aktif)])>{{ $grup }} ▾</button>
                     <div class="nav-dropdown">
-                        @foreach ($item as $rute => $label)
+                        @foreach ($item as $rute => [$label])
                             <a href="{{ route($rute) }}" @class(['active' => $aktif($rute)])>{{ $label }}</a>
                         @endforeach
                     </div>
                 </div>
             @endforeach
 
-            @can('admin')
+            @can('pengguna.kelola')
                 <a href="{{ route('pengguna.index') }}" @class(['active' => request()->routeIs('pengguna.*')])>Pengguna</a>
             @endcan
+
+            <span class="nav-akun" title="{{ auth()->user()->labelPeran() }}">{{ auth()->user()->name }}<small>{{ auth()->user()->labelPeran() }}</small></span>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
