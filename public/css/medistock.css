@@ -272,7 +272,7 @@ body.halaman-login { margin: 0; min-height: 100vh; background: radial-gradient(1
 .obat-cari .cek-inline input { flex: none; min-width: 0; width: 16px !important; height: 16px; }
 
 /* ===== Header "Ini Rumah Sakit": logo, tagline, motif, ikon menu ===== */
-.main-header { background: #12345a center / cover no-repeat; padding: 14px 30px; }
+.main-header { background: #12345a; padding: 14px 30px; }
 .brand { display: flex; align-items: center; gap: 14px; color: #fff; text-decoration: none; }
 .brand-logo { width: 60px; height: 54px; object-fit: contain; flex: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,.25)); }
 .brand-teks { display: flex; flex-direction: column; gap: 3px; text-shadow: 0 1px 3px rgba(0,0,0,.35); }
@@ -311,3 +311,17 @@ body.halaman-app { background: #f4f8fc url('../images/latar-web.jpg') center / c
 .login-logo-besar { width: 96px; height: 86px; object-fit: contain; }
 .login-kepala h1 { margin: 6px 0 0; font-size: 26px; font-weight: 600; color: #12345a; }
 .login-kepala p { margin: 0; font-size: 14px; color: #475467; line-height: 1.5; }
+
+/* ===== Status koneksi: lapisan "koneksi terputus" & notifikasi "tersambung kembali" ===== */
+.koneksi-putus { position: sticky; top: 0; z-index: 900; background: #fef3f2; border-bottom: 1px solid #fecdca; color: #912018; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; font-size: 14px; text-align: center; }
+.koneksi-putus[hidden], .koneksi-pulih[hidden] { display: none; }
+.koneksi-ikon { animation: kedip-koneksi 1.4s infinite; flex: none; }
+.koneksi-titik { display: inline-flex; gap: 4px; }
+.koneksi-titik i { width: 6px; height: 6px; border-radius: 50%; background: #d92d20; animation: titik-koneksi 1.2s infinite; }
+.koneksi-titik i:nth-child(2) { animation-delay: .2s; } .koneksi-titik i:nth-child(3) { animation-delay: .4s; }
+.koneksi-putus.goyang { animation: goyang-koneksi .4s; }
+.koneksi-pulih { position: fixed; right: 24px; bottom: 24px; z-index: 900; display: flex; align-items: center; gap: 10px; background: #ecfdf3; border: 1px solid #abefc6; color: #067647; border-radius: 12px; padding: 12px 16px; box-shadow: 0 10px 24px rgba(16,24,40,.12); font-size: 14px; }
+@keyframes kedip-koneksi { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+@keyframes titik-koneksi { 0%,80%,100% { opacity: .2 } 40% { opacity: 1 } }
+@keyframes goyang-koneksi { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
+@media (prefers-reduced-motion: reduce) { .koneksi-ikon, .koneksi-titik i, .koneksi-putus.goyang { animation: none; } }

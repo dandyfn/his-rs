@@ -93,6 +93,8 @@
     </div>
 </header>
 
+@include('partials.status-koneksi')
+
 <main class="obat-wrap">
     @if (session('pesan'))
         <div class="obat-alert">{{ session('pesan') }}</div>

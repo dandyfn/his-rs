@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tidak ada koneksi internet</title>
+<link rel="icon" type="image/png" href="/images/favicon.png">
+<!-- CSS ditulis langsung di sini karena halaman ini harus tampil tanpa internet -->
+<style>
+/* Halaman error (404, 403, 419, 429, 500, 503) dan offline — "Ini Rumah Sakit" */
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;color:#1d2939;background:#f4f8fc;min-height:100vh;display:flex;flex-direction:column}
+.err-atas{background:#12345a;color:#fff;padding:12px 30px;display:flex;align-items:center;gap:12px;text-decoration:none}
+.err-atas img{width:42px;height:38px;object-fit:contain}
+.err-atas span{font-size:20px;font-weight:600}
+.err-isi{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:#f4f8fc url('/images/latar-web.jpg') center/cover no-repeat fixed}
+.err-kartu{width:100%;max-width:560px;background:#fff;border:1px solid #dbe5f0;border-radius:20px;box-shadow:0 16px 40px rgba(18,52,90,.10);padding:36px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.err-kode{font-size:14px;font-weight:700;letter-spacing:1.5px}
+.err-kartu h1{margin:0;font-size:28px;font-weight:700;color:#12345a}
+.err-kartu p{margin:0;font-size:15px;line-height:1.6;color:#475467}
+.err-tombol{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:8px}
+.err-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;font:inherit;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;background:#155eef;color:#fff;border:1px solid #155eef}
+.err-btn:hover{background:#0f4bc4}
+.err-btn.garis{background:#fff;color:#12345a;border-color:#c9d5e4}
+.err-btn.garis:hover{background:#f2f6fb}
+.err-btn:focus-visible{outline:3px solid #9db8f7;outline-offset:2px}
+.err-tunggu{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#475467}
+.err-tunggu i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#155eef;animation:titik 1.2s infinite}
+.err-tunggu i:nth-child(2){animation-delay:.2s}.err-tunggu i:nth-child(3){animation-delay:.4s}
+@media (max-width:600px){.err-kartu{padding:28px 22px}.err-kartu h1{font-size:23px}.err-isi{background-attachment:scroll}}
+@keyframes garis{from{stroke-dashoffset:520}to{stroke-dashoffset:0}}
+@keyframes kedip{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes ayun{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes getar{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes putar{to{transform:rotate(360deg)}}
+@keyframes balik{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
+@keyframes denyut{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+@keyframes melayang{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes titik{0%,80%,100%{opacity:.2}40%{opacity:1}}
+@keyframes tetes{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(18px);opacity:0}}
+@keyframes zzz{0%{transform:translateY(6px);opacity:0}30%{opacity:1}100%{transform:translateY(-10px);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+</style>
+</head>
+<body>
+  <div class="err-atas">
+    <img src="/images/logo-irs.png" alt="Logo rumah sakit" width="42" height="38">
+    <span>Ini Rumah Sakit</span>
+  </div>
+  <main class="err-isi">
+    <div class="err-kartu">
+      <svg width="230" height="190" viewBox="0 0 230 190" role="img" aria-label="Ilustrasi monitor pasien yang menampilkan sinyal Wi-Fi lemah dicoret">
+        <!-- tiang & kaki monitor -->
+        <rect x="108" y="140" width="14" height="30" fill="#9aa9bd"></rect>
+        <rect x="70" y="168" width="90" height="10" rx="5" fill="#9aa9bd"></rect>
+        <!-- badan monitor -->
+        <rect x="14" y="10" width="202" height="134" rx="14" fill="#12345a"></rect>
+        <rect x="26" y="22" width="150" height="110" rx="6" fill="#0b1f3a"></rect>
+        <!-- tombol-tombol di samping -->
+        <circle cx="196" cy="42" r="7" fill="#2a4f7c"></circle>
+        <circle cx="196" cy="66" r="7" fill="#2a4f7c"></circle>
+        <circle cx="196" cy="118" r="7" fill="#f04438" style="animation: kedip 1s infinite"></circle>
+        <!-- garis EKG yang melambat lalu datar -->
+        <polyline points="30,104 52,104 58,104 63,92 69,116 75,84 81,110 86,104 120,104 172,104" fill="none" stroke="#32d583" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="520" style="animation: garis 2.6s linear infinite"></polyline>
+        <text x="34" y="40" font-size="11" font-family="Segoe UI, Arial" fill="#7ee2b8">NET</text>
+        <text x="146" y="40" font-size="11" font-family="Segoe UI, Arial" fill="#f97066" text-anchor="end">0 Kbps</text>
+        <!-- Wi-Fi lemah dicoret di layar -->
+        <g style="animation: kedip 1.6s infinite">
+          <path d="M76 58a36 36 0 0 1 50 0" fill="none" stroke="#3a5577" stroke-width="5" stroke-linecap="round"></path>
+          <path d="M85 67a23 23 0 0 1 32 0" fill="none" stroke="#3a5577" stroke-width="5" stroke-linecap="round"></path>
+          <path d="M94 76a10 10 0 0 1 14 0" fill="none" stroke="#fdb022" stroke-width="5" stroke-linecap="round"></path>
+          <circle cx="101" cy="83" r="3.5" fill="#fdb022"></circle>
+          <path d="M74 44l54 46" stroke="#f04438" stroke-width="5" stroke-linecap="round"></path>
+        </g>
+      </svg>
+      <span class="err-kode" style="color:#f04438">OFFLINE</span>
+      <h1>Tidak ada koneksi internet</h1>
+      <p>Periksa Wi-Fi atau data seluler Anda. Halaman akan dimuat ulang otomatis begitu koneksi kembali.</p>
+      <div class="err-tombol"><button type="button" class="err-btn" onclick="location.reload()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Coba lagi</button></div>
+      <span class="err-tunggu" role="status">Mencoba menyambung ulang <span aria-hidden="true"><i></i> <i></i> <i></i></span></span>
+    </div>
+  </main>
+<script>
+  // Muat ulang otomatis saat koneksi kembali
+  window.addEventListener('online', () => location.reload());
+  setInterval(() => {
+    fetch('/up', { cache: 'no-store' }).then(r => { if (r.ok) location.reload(); }).catch(() => {});
+  }, 5000);
+</script>
+</body>
+</html>

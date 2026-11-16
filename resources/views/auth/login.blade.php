@@ -42,6 +42,7 @@
         </form>
     </section>
 </div>
+@include('partials.status-koneksi')
 <p class="login-catatan">Pendaftaran · Antrean Rawat Jalan · MediStock RS</p>
 
 <script>
