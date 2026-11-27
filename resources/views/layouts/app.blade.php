@@ -6,7 +6,11 @@
     <title>@yield('title') - {{ config('app.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
     <link rel="stylesheet" href="{{ asset('css/medistock.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tema.css') }}">
     @stack('styles')
 </head>
 <body class="halaman-app">
@@ -46,27 +50,25 @@
 <header class="main-header">
     <div class="header-container">
         <a href="{{ route('dashboard') }}" class="brand">
-            <img src="{{ asset('images/logo-irs.png') }}" alt="Logo {{ config('app.name') }}" class="brand-logo" width="60" height="54">
+            <img src="{{ asset('images/logo-irs.png') }}" alt="" class="brand-logo" width="30" height="27">
             <span class="brand-teks">
                 <span class="brand-nama">{{ config('app.name') }}</span>
-                <span class="brand-tagline">{{ config('app.tagline') }}</span>
             </span>
         </a>
 
         <nav class="main-nav" aria-label="Menu utama">
             <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>
-                <x-ikon nama="dashboard" /> Dashboard
+                Dashboard
             </a>
 
             @foreach ($menu as $grup => $item)
                 <div class="nav-grup">
                     <button type="button" @class(['nav-grup-judul', 'active' => $item->keys()->contains($aktif)]) aria-haspopup="true">
-                        <x-ikon :nama="$ikonGrup[$grup]" /> {{ $grup }} <x-ikon nama="panah-bawah" :ukuran="12" class="ikon-panah" />
+                        {{ $grup }} <x-ikon nama="panah-bawah" :ukuran="12" class="ikon-panah" />
                     </button>
                     <div class="nav-dropdown">
                         @foreach ($item as $rute => [$label, $izin, $ikon])
                             <a href="{{ route($rute) }}" @class(['active' => $aktif($rute)])>
-                                <span class="ikon-kotak"><x-ikon :nama="$ikon" :ukuran="16" /></span>
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -76,18 +78,17 @@
 
             @can('pengguna.kelola')
                 <a href="{{ route('pengguna.index') }}" @class(['active' => request()->routeIs('pengguna.*')])>
-                    <x-ikon nama="pengguna" /> Pengguna
+                    Pengguna
                 </a>
             @endcan
 
             <span class="nav-akun" title="{{ auth()->user()->labelPeran() }}">
-                <x-ikon nama="akun" :ukuran="26" />
                 <span class="nav-akun-teks">{{ auth()->user()->name }}<small>{{ auth()->user()->labelPeran() }}</small></span>
             </span>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="nav-logout"><x-ikon nama="keluar" /> Logout</button>
+                <button type="submit" class="nav-logout">Keluar</button>
             </form>
         </nav>
     </div>
