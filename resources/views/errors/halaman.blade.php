@@ -8,11 +8,14 @@
     <meta name="robots" content="noindex">
     <title>@yield('kode') {{ strip_tags(View::yieldContent('judul')) }} - {{ config('app.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="{{ asset('css/halaman-error.css') }}">
 </head>
 <body>
     <a class="err-atas" href="{{ url('/') }}">
-        <img src="{{ asset('images/logo-irs.png') }}" alt="Logo {{ config('app.name') }}" width="42" height="38">
+        <img src="{{ asset('images/logo-irs.png') }}" alt="" width="30" height="27">
         <span>{{ config('app.name') }}</span>
     </a>
     <main class="err-isi">

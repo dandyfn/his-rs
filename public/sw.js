@@ -3,10 +3,10 @@
  * Tugasnya hanya satu: kalau pengguna membuka/pindah halaman saat TIDAK ADA INTERNET,
  * tampilkan halaman /offline.html (bukan halaman dinosaurus bawaan browser).
  * Halaman berisi data pasien TIDAK disimpan di cache (privasi): hanya offline.html,
- * logo, favicon, dan gambar latar.
+ * logo, dan favicon.
  */
-const CACHE = 'irs-offline-v1';
-const BERKAS = ['/offline.html', '/images/logo-irs.png', '/images/favicon.png', '/images/latar-web.jpg'];
+const CACHE = 'irs-offline-v2';
+const BERKAS = ['/offline.html', '/images/logo-irs.png', '/images/favicon.png'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(CACHE).then((c) => c.addAll(BERKAS)).then(() => self.skipWaiting()));

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') - {{ config('app.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    {{-- Penanda bahwa JavaScript aktif: menu HP baru disembunyikan kalau tombolnya bisa dipakai --}}
+    <script>document.documentElement.classList.add('js');</script>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,7 +58,14 @@
             </span>
         </a>
 
-        <nav class="main-nav" aria-label="Menu utama">
+        {{-- Tombol menu untuk layar kecil (HP). Di layar lebar tombol ini disembunyikan oleh tema.css. --}}
+        <button type="button" class="nav-toggle" aria-controls="menu-utama" aria-expanded="false">
+            <svg class="ikon-buka" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            <svg class="ikon-tutup" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <span>Menu</span>
+        </button>
+
+        <nav class="main-nav" id="menu-utama" aria-label="Menu utama">
             <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>
                 Dashboard
             </a>
@@ -114,6 +123,21 @@
     @yield('content')
 </main>
 
+<script>
+// Buka/tutup menu di HP. Tombol Esc juga menutup menu.
+(() => {
+    const header = document.querySelector('.main-header');
+    const tombol = header.querySelector('.nav-toggle');
+    const atur = (buka) => {
+        header.classList.toggle('menu-terbuka', buka);
+        tombol.setAttribute('aria-expanded', buka ? 'true' : 'false');
+    };
+    tombol.addEventListener('click', () => atur(!header.classList.contains('menu-terbuka')));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && header.classList.contains('menu-terbuka')) { atur(false); tombol.focus(); }
+    });
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

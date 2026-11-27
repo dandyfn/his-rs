@@ -8,27 +8,28 @@
 <link rel="icon" type="image/png" href="/images/favicon.png">
 <!-- CSS ditulis langsung di sini karena halaman ini harus tampil tanpa internet -->
 <style>
-/* Halaman error (404, 403, 419, 429, 500, 503) dan offline — "Ini Rumah Sakit" */
+/* Halaman error (404, 403, 419, 429, 500, 503) dan offline — "Ini Rumah Sakit"
+   Bingkai (header, latar, kartu, tombol) mengikuti tema.css; ilustrasi & animasi tidak diubah. */
 *{box-sizing:border-box}
-body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;color:#1d2939;background:#f4f8fc;min-height:100vh;display:flex;flex-direction:column}
-.err-atas{background:#12345a;color:#fff;padding:12px 30px;display:flex;align-items:center;gap:12px;text-decoration:none}
-.err-atas img{width:42px;height:38px;object-fit:contain}
-.err-atas span{font-size:20px;font-weight:600}
-.err-isi{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:#f4f8fc url('/images/latar-web.jpg') center/cover no-repeat fixed}
-.err-kartu{width:100%;max-width:560px;background:#fff;border:1px solid #dbe5f0;border-radius:20px;box-shadow:0 16px 40px rgba(18,52,90,.10);padding:36px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1B2124;background:#F4F5F3;min-height:100vh;display:flex;flex-direction:column}
+.err-atas{background:#fff;color:#1B2124;border-bottom:1px solid #DADDDA;min-height:60px;padding:0 max(24px,calc((100% - 1200px) / 2));display:flex;align-items:center;gap:10px;text-decoration:none}
+.err-atas img{width:30px;height:27px;object-fit:contain}
+.err-atas span{font-size:16px;font-weight:600}
+.err-isi{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:#F4F5F3}
+.err-kartu{width:100%;max-width:560px;background:#fff;border:1px solid #DADDDA;border-radius:8px;padding:36px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
 .err-kode{font-size:14px;font-weight:700;letter-spacing:1.5px}
-.err-kartu h1{margin:0;font-size:28px;font-weight:700;color:#12345a}
-.err-kartu p{margin:0;font-size:15px;line-height:1.6;color:#475467}
+.err-kartu h1{margin:0;font-size:26px;font-weight:600;color:#1B2124}
+.err-kartu p{margin:0;font-size:15px;line-height:1.6;color:#5B6468}
 .err-tombol{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:8px}
-.err-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;font:inherit;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;background:#155eef;color:#fff;border:1px solid #155eef}
-.err-btn:hover{background:#0f4bc4}
-.err-btn.garis{background:#fff;color:#12345a;border-color:#c9d5e4}
-.err-btn.garis:hover{background:#f2f6fb}
-.err-btn:focus-visible{outline:3px solid #9db8f7;outline-offset:2px}
-.err-tunggu{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#475467}
+.err-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:4px;font:inherit;font-size:15px;font-weight:500;text-decoration:none;cursor:pointer;background:#135E75;color:#fff;border:1px solid #135E75}
+.err-btn:hover{background:#0C4152;border-color:#0C4152}
+.err-btn.garis{background:#fff;color:#135E75;border-color:#B9BFBB}
+.err-btn.garis:hover{background:#F4F5F3}
+.err-btn:focus-visible{outline:2px solid #135E75;outline-offset:2px}
+.err-tunggu{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#5B6468}
 .err-tunggu i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#155eef;animation:titik 1.2s infinite}
 .err-tunggu i:nth-child(2){animation-delay:.2s}.err-tunggu i:nth-child(3){animation-delay:.4s}
-@media (max-width:600px){.err-kartu{padding:28px 22px}.err-kartu h1{font-size:23px}.err-isi{background-attachment:scroll}}
+@media (max-width:600px){.err-atas{padding:0 16px}.err-kartu{padding:28px 22px}.err-kartu h1{font-size:23px}}
 @keyframes garis{from{stroke-dashoffset:520}to{stroke-dashoffset:0}}
 @keyframes kedip{0%,100%{opacity:1}50%{opacity:.25}}
 @keyframes ayun{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
@@ -41,12 +42,11 @@ body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;co
 @keyframes tetes{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(18px);opacity:0}}
 @keyframes zzz{0%{transform:translateY(6px);opacity:0}30%{opacity:1}100%{transform:translateY(-10px);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
-
 </style>
 </head>
 <body>
   <div class="err-atas">
-    <img src="/images/logo-irs.png" alt="Logo rumah sakit" width="42" height="38">
+    <img src="/images/logo-irs.png" alt="" width="30" height="27">
     <span>Ini Rumah Sakit</span>
   </div>
   <main class="err-isi">

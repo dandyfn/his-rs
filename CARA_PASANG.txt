@@ -1,14 +1,31 @@
-Tampilan baru HIS - file yang berubah
-=====================================
+Tampilan baru HIS - daftar file (versi 2)
+=========================================
 
-File BARU:
-  public/css/tema.css                      -> semua aturan tampilan baru (dimuat paling akhir)
+File BARU
+  public/css/tema.css
+      Semua aturan tampilan baru. Dimuat paling akhir sehingga menimpa CSS lama.
+      Berisi juga: menu HP (tombol tiga garis) dan susunan "judul di luar, isi dalam satu panel"
+      untuk semua halaman yang memakai <section class="obat-card">.
 
-File DIGANTI:
-  resources/views/layouts/app.blade.php    -> header putih, menu teks tanpa ikon, tagline dihapus, memuat tema.css
-  resources/views/auth/login.blade.php     -> login baru, animasi jaringan titik dihapus
-  resources/views/dashboard.blade.php      -> tabel "Perlu tindakan hari ini" + pintasan
+File DIGANTI
+  resources/views/layouts/app.blade.php
+      Header putih, menu teks, tagline dihapus, tombol Menu untuk HP + skrip buka/tutup.
+  resources/views/auth/login.blade.php
+      Login dua panel, animasi jaringan titik dihapus. Di HP panel info diringkas.
+  resources/views/dashboard.blade.php
+      Tabel "Perlu tindakan hari ini" + Pintasan.
+  resources/views/errors/halaman.blade.php
+      Kerangka halaman error: font baru dan ukuran logo. Isi tiap halaman error (403, 404, dst.) TIDAK diubah.
+  public/css/halaman-error.css
+      Hanya bingkai (header, latar, kartu, tombol). Ilustrasi dan semua @keyframes animasi sama persis.
+  public/offline.html
+      CSS di dalamnya disamakan dengan halaman-error.css. Ilustrasi dan animasi tidak diubah.
+  public/sw.js
+      Versi cache naik ke irs-offline-v2 supaya browser mengambil offline.html yang baru;
+      gambar latar lama tidak lagi disimpan di cache.
 
 Tidak ada controller, model, route, atau database yang diubah.
-Untuk kembali ke tampilan lama: hapus baris <link ... tema.css> di layouts/app.blade.php
-dan kembalikan login.blade.php serta dashboard.blade.php versi lama dari Git.
+Sudah dicoba: 37 tes otomatis lulus, semua halaman dicek di layar laptop dan HP.
+
+Catatan: gambar public/images/latar-web.jpg dan motif-header.jpg sekarang tidak dipakai lagi.
+Boleh dibiarkan atau dihapus belakangan.
