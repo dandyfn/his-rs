@@ -59,55 +59,106 @@ class PendaftaranAntreanDemoSeeder extends Seeder
         }
 
         if (Antrean::doesntExist()) {
-            $pasien = Pasien::orderBy('id')->pluck('id')->values();
-            $poli = Poli::orderBy('id')->pluck('id', 'nama_poli');
+            self::buatAntreanDemo();
+        }
+    }
 
-            // 7 hari terakhir: antrean selesai dengan waktu tunggu bervariasi (untuk laporan)
-            for ($hari = 7; $hari >= 1; $hari--) {
-                $tanggal = today()->subDays($hari);
-                foreach ($poli as $poliId) {
-                    for ($k = 1; $k <= 4; $k++) {
-                        $daftar = $tanggal->copy()->setTime(8, 0)->addMinutes($k * 12);
-                        $Antrean = Antrean::create([
-                            'nomor_antrean' => 'A' . str_pad((string) $k, 3, '0', STR_PAD_LEFT),
-                            'pasien_id' => $pasien[($hari + $k + $poliId) % $pasien->count()],
-                            'poli_id' => $poliId, 'tanggal_kunjungan' => $tanggal,
-                            'status' => $k === 4 && $hari % 3 === 0 ? 'batal' : 'selesai',
-                        ]);
-                        $Antrean->created_at = $daftar;
-                        if ($Antrean->status === 'selesai') {
-                            $Antrean->waktu_mulai = $daftar->copy()->addMinutes(10 + ($k * 7 + $hari * 3) % 35);
-                            $Antrean->waktu_selesai = $Antrean->waktu_mulai->copy()->addMinutes(12);
-                        }
-                        $Antrean->save();
-                    }
-                }
+    /** Penanda data simulasi di kolom antrean.sumber (lihat perintah demo:segarkan). */
+    public const SUMBER = 'demo';
+
+    /**
+     * Pola jumlah pasien per hari (Senin..Sabtu) untuk RIWAYAT SIMULASI 4 minggu.
+     * Minggu = poli tutup. Senin sengaja paling ramai supaya fitur "beban dibanding biasa" terlihat.
+     */
+    public const POLA_HARIAN = [
+        'Poli Umum' => [1 => 14, 12, 11, 11, 10, 7],
+        'Poli Gigi' => [1 => 5, 4, 4, 4, 4, 3],
+        'Poli Anak' => [1 => 8, 6, 5, 5, 5, 4],
+    ];
+
+    /** Lama pelayanan dasar per poli (menit) untuk data simulasi. */
+    public const LAMA_LAYANAN = ['Poli Umum' => 10, 'Poli Gigi' => 20, 'Poli Anak' => 12];
+
+    /**
+     * Membuat antrean demo: riwayat 4 minggu (data simulasi berpola) + antrean hari ini.
+     * Semua baris ditandai sumber = 'demo'. Tanggalnya relatif terhadap hari ini,
+     * jadi perintah demo:segarkan cukup menghapus baris demo lalu memanggil fungsi ini lagi.
+     */
+    public static function buatAntreanDemo(): void
+    {
+        $pasien = Pasien::orderBy('id')->pluck('id')->values();
+        $poli = Poli::whereIn('nama_poli', array_keys(self::POLA_HARIAN))->pluck('id', 'nama_poli');
+        if ($pasien->isEmpty() || $poli->isEmpty()) {
+            return;
+        }
+
+        // 1) Riwayat simulasi 28 hari ke belakang (Minggu dilewati).
+        for ($hari = 28; $hari >= 1; $hari--) {
+            $tanggal = today()->subDays($hari);
+            if ($tanggal->isSunday()) {
+                continue;
             }
-
-            // Hari ini: Poli Umum ramai (memicu rekomendasi prioritas Tinggi)
-            $statusHariIni = [
-                'Poli Umum' => ['selesai', 'dilayani', 'dipanggil', 'menunggu', 'menunggu', 'menunggu', 'menunggu', 'menunggu'],
-                'Poli Gigi' => ['selesai', 'dilayani', 'menunggu'],
-                'Poli Anak' => ['dipanggil', 'menunggu', 'menunggu', 'menunggu'],
-            ];
-            $i = 0;
-            foreach ($statusHariIni as $namaPoli => $daftarStatus) {
-                foreach ($daftarStatus as $n => $status) {
-                    $daftar = now()->subMinutes(90 - $n * 9);
-                    $a = Antrean::create([
-                        'nomor_antrean' => 'A' . str_pad((string) ($n + 1), 3, '0', STR_PAD_LEFT),
-                        'pasien_id' => $pasien[$i++ % $pasien->count()],
-                        'poli_id' => $poli[$namaPoli], 'tanggal_kunjungan' => today(), 'status' => $status,
+            $urutPoli = 0;
+            foreach (self::POLA_HARIAN as $namaPoli => $pola) {
+                $urutPoli++;
+                if (! isset($poli[$namaPoli])) {
+                    continue;
+                }
+                // Variasi kecil -1..+1 supaya tiap minggu tidak persis sama.
+                $jumlah = max(1, $pola[$tanggal->dayOfWeekIso] + (($hari * 7 + $urutPoli * 3) % 3) - 1);
+                // Pasien datang antara 07.30 dan 10.00; dokter mulai 08.00 dan melayani satu per satu.
+                $jarak = intdiv(150, $jumlah);
+                $dokterSelesai = $tanggal->copy()->setTime(8, 0);
+                for ($k = 1; $k <= $jumlah; $k++) {
+                    $daftar = $tanggal->copy()->setTime(7, 30)->addMinutes(($k - 1) * $jarak);
+                    $batal = $k % 9 === 0;
+                    $a = new Antrean([
+                        'nomor_antrean' => 'A' . str_pad((string) $k, 3, '0', STR_PAD_LEFT),
+                        'pasien_id' => $pasien[($hari + $k + $urutPoli) % $pasien->count()],
+                        'poli_id' => $poli[$namaPoli], 'tanggal_kunjungan' => $tanggal,
+                        'status' => $batal ? 'batal' : 'selesai', 'sumber' => self::SUMBER,
                     ]);
-                    $a->created_at = $daftar;
-                    if (in_array($status, ['dilayani', 'selesai'], true)) {
-                        $a->waktu_mulai = $daftar->copy()->addMinutes(18 + $n * 4);
-                    }
-                    if ($status === 'selesai') {
-                        $a->waktu_selesai = $a->waktu_mulai->copy()->addMinutes(10);
+                    $a->created_at = $a->updated_at = $daftar;
+                    if (! $batal) {
+                        $mulai = $daftar->greaterThan($dokterSelesai) ? $daftar->copy() : $dokterSelesai->copy();
+                        $lama = self::LAMA_LAYANAN[$namaPoli] + ($k * 3 + $hari) % 5;
+                        $a->waktu_mulai = $mulai;
+                        $a->waktu_selesai = $dokterSelesai = $mulai->copy()->addMinutes($lama);
                     }
                     $a->save();
                 }
+            }
+        }
+
+        // 2) Hari ini:
+        //    - Poli Umum: banyak antrean menunggu -> prioritas Tinggi dari aturan lama;
+        //    - Poli Anak: sengaja ±50% di atas biasanya untuk hari ini, tetapi hanya 3 menunggu,
+        //      sehingga prioritasnya naik dari Sedang ke Tinggi KARENA BEBAN (fitur prediksi);
+        //    - Poli Gigi: normal.
+        $anak = (int) ceil((self::POLA_HARIAN['Poli Anak'][today()->dayOfWeekIso] ?? 4) * 1.5);
+        $statusHariIni = [
+            'Poli Umum' => ['selesai', 'dilayani', 'dipanggil', 'menunggu', 'menunggu', 'menunggu', 'menunggu', 'menunggu'],
+            'Poli Gigi' => ['selesai', 'dilayani', 'menunggu'],
+            'Poli Anak' => array_merge(array_fill(0, max(0, $anak - 4), 'selesai'), ['dilayani', 'menunggu', 'menunggu', 'menunggu']),
+        ];
+        $i = 0;
+        foreach ($statusHariIni as $namaPoli => $daftarStatus) {
+            foreach ($daftarStatus as $n => $status) {
+                $daftar = now()->subMinutes(5 + (count($daftarStatus) - $n) * 8);
+                $a = new Antrean([
+                    'nomor_antrean' => 'A' . str_pad((string) ($n + 1), 3, '0', STR_PAD_LEFT),
+                    'pasien_id' => $pasien[$i++ % $pasien->count()],
+                    'poli_id' => $poli[$namaPoli], 'tanggal_kunjungan' => today(), 'status' => $status,
+                    'sumber' => self::SUMBER,
+                ]);
+                $a->created_at = $a->updated_at = $daftar;
+                if (in_array($status, ['dilayani', 'selesai'], true)) {
+                    $a->waktu_mulai = $daftar->copy()->addMinutes(10);
+                }
+                if ($status === 'selesai') {
+                    $a->waktu_selesai = $a->waktu_mulai->copy()->addMinutes(self::LAMA_LAYANAN[$namaPoli]);
+                }
+                $a->save();
             }
         }
     }

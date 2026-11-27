@@ -18,4 +18,11 @@ php artisan route:cache
 php artisan view:cache
 php artisan migrate --force
 
+# Data demo disegarkan setiap kali server menyala, HANYA jika variabel DEMO_SEGARKAN=true
+# diisi di Environment Render. Hanya data bertanda demo yang dibuat ulang; data input petugas aman.
+# Kalau gagal (mis. data demo belum ada), server tetap jalan.
+if [ "${DEMO_SEGARKAN}" = "true" ]; then
+    php artisan demo:segarkan --force || echo "demo:segarkan dilewati"
+fi
+
 exec apache2-foreground

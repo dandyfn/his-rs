@@ -13,7 +13,7 @@ class Antrean extends Model
     public const STATUS = ['menunggu', 'dipanggil', 'dilayani', 'selesai', 'batal'];
 
     protected $fillable = [
-        'nomor_antrean', 'pasien_id', 'poli_id', 'tanggal_kunjungan', 'status', 'waktu_mulai', 'waktu_selesai',
+        'nomor_antrean', 'pasien_id', 'poli_id', 'tanggal_kunjungan', 'status', 'waktu_mulai', 'waktu_selesai', 'sumber',
     ];
 
     protected function casts(): array
@@ -44,6 +44,14 @@ class Antrean extends Model
     public function menitTunggu(): ?int
     {
         return $this->waktu_mulai ? (int) round(abs($this->created_at->diffInMinutes($this->waktu_mulai))) : null;
+    }
+
+    /** Lama pelayanan (menit) dari mulai dilayani sampai selesai. Dipakai untuk prediksi waktu tunggu. */
+    public function menitLayanan(): ?int
+    {
+        return $this->waktu_mulai && $this->waktu_selesai
+            ? (int) round(abs($this->waktu_mulai->diffInMinutes($this->waktu_selesai)))
+            : null;
     }
 
     public function kelasStatus(): string

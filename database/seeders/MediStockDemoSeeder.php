@@ -38,19 +38,7 @@ class MediStockDemoSeeder extends Seeder
         $apoteker = User::where('username', 'apoteker')->value('id');
         $gudang = User::where('username', 'gudang')->value('id');
 
-        // [kode, nama, satuan, harga, pola pemakaian harian, batch: [nomor, sisa, ED (hari dari sekarang)]]
-        $daftar = [
-            ['OBT-DEMO-01', 'Paracetamol 500 mg', 'strip', 5000, fn ($n) => 8 + ($n % 5),
-                [['B-PCT-2501', 30, 45], ['B-PCT-2602', 50, 400]]],
-            ['OBT-DEMO-02', 'Amoxicillin 500 mg', 'strip', 12000, fn ($n) => 4 + ($n % 5),
-                [['B-AMX-2601', 45, 75]]],
-            ['OBT-DEMO-03', 'Antasida tablet', 'strip', 6000, fn ($n) => 3 + ($n % 5),
-                [['B-ANT-2409', 10, -5], ['B-ANT-2603', 60, 300]]],
-            ['OBT-DEMO-04', 'Salep kulit 10 g', 'tube', 18000, fn ($n) => $n % 10 === 0 ? 1 : 0,
-                [['B-SLP-2604', 15, 200]]],
-        ];
-
-        foreach ($daftar as [$kode, $nama, $satuan, $harga, $pola, $batch]) {
+        foreach (self::daftarObat() as [$kode, $nama, $satuan, $harga, $pola, $batch]) {
             $obat = Obat::create([
                 'kode_obat' => $kode, 'nama_obat' => $nama, 'satuan' => $satuan, 'harga_jual' => $harga,
                 'stok' => collect($batch)->sum(1), 'aktif' => true,
@@ -62,26 +50,7 @@ class MediStockDemoSeeder extends Seeder
                 ]);
             }
 
-            // Riwayat pemakaian ±6 bulan (hari ke-90 dilewati supaya jendela 90 hari tetap tepat).
-            // Bulan-bulan lama sedikit lebih rendah agar grafik memperlihatkan tren naik.
-            $baris = [];
-            for ($n = 1; $n <= 179; $n++) {
-                if ($n === 90) {
-                    continue;
-                }
-                $jumlah = $n < 90 ? $pola($n) : (int) floor($pola($n) * 0.8);
-                if ($jumlah > 0) {
-                    $waktu = now()->subDays($n)->setTime(10, 0);
-                    $baris[] = [
-                        'obat_id' => $obat->id, 'jenis' => 'keluar', 'jumlah' => $jumlah,
-                        'keterangan' => 'Data contoh pemakaian (demo DDDM)', 'sumber' => 'demo',
-                        'created_at' => $waktu, 'updated_at' => $waktu,
-                    ];
-                }
-            }
-            foreach (array_chunk($baris, 100) as $potong) {
-                TransaksiStok::insert($potong);
-            }
+            self::isiRiwayatPemakaian($obat->id, $pola);
         }
 
         // Obat baru dengan data pemakaian < 1 bulan -> rekomendasi belum dapat dihitung (UC-11).
@@ -98,11 +67,7 @@ class MediStockDemoSeeder extends Seeder
             'keterangan' => 'Obat baru (contoh)'], $apoteker);
         $stok->terimaBarang($po, ['jumlah' => 60, 'nomor_batch' => 'B-VTC-2611', 'tanggal_kedaluwarsa' => today()->addDays(540)->toDateString(),
             'tanggal_terima' => today()->subDays(10)->toDateString(), 'keterangan' => 'Surat jalan SJ-001'], $gudang);
-        for ($n = 1; $n <= 9; $n++) {
-            TransaksiStok::insert(['obat_id' => $vitamin->id, 'jenis' => 'keluar', 'jumlah' => 2,
-                'keterangan' => 'Data contoh pemakaian (demo DDDM)', 'sumber' => 'demo',
-                'created_at' => now()->subDays($n), 'updated_at' => now()->subDays($n)]);
-        }
+        self::isiPemakaianObatBaru($vitamin->id);
 
         // Pesanan 2: Salep dipesan 30, baru diterima 15 (diterima sebagian).
         $salep = Obat::where('kode_obat', 'OBT-DEMO-04')->first();
@@ -121,6 +86,66 @@ class MediStockDemoSeeder extends Seeder
         foreach (Pasien::orderBy('id')->take(2)->get() as $i => $pasien) {
             $stok->prosesPenjualan(['pasien_id' => $pasien->id, 'nama_pembeli' => $pasien->nama,
                 'jenis' => 'resep', 'nomor_resep' => 'RSP-DEMO-' . ($i + 1)], [$vitamin->id => 2 + $i], $apotek);
+        }
+    }
+
+    /** Penanda riwayat pemakaian simulasi di kolom transaksi_stok_obat.sumber. */
+    public const SUMBER = 'demo';
+
+    /** Batch hasil penerimaan barang demo: [nomor batch => ED (hari dari sekarang)]. */
+    public const BATCH_PENERIMAAN = ['B-VTC-2611' => 540, 'B-SLP-2611' => 700];
+
+    /**
+     * Obat demo: [kode, nama, satuan, harga, pola pemakaian harian, batch: [nomor, sisa, ED (hari dari sekarang)]].
+     * Dipakai seeder dan perintah demo:segarkan.
+     */
+    public static function daftarObat(): array
+    {
+        return [
+            ['OBT-DEMO-01', 'Paracetamol 500 mg', 'strip', 5000, fn ($n) => 8 + ($n % 5),
+                [['B-PCT-2501', 30, 45], ['B-PCT-2602', 50, 400]]],
+            ['OBT-DEMO-02', 'Amoxicillin 500 mg', 'strip', 12000, fn ($n) => 4 + ($n % 5),
+                [['B-AMX-2601', 45, 75]]],
+            ['OBT-DEMO-03', 'Antasida tablet', 'strip', 6000, fn ($n) => 3 + ($n % 5),
+                [['B-ANT-2409', 10, -5], ['B-ANT-2603', 60, 300]]],
+            ['OBT-DEMO-04', 'Salep kulit 10 g', 'tube', 18000, fn ($n) => $n % 10 === 0 ? 1 : 0,
+                [['B-SLP-2604', 15, 200]]],
+        ];
+    }
+
+    /**
+     * Riwayat pemakaian ±6 bulan (hari ke-90 dilewati supaya jendela 90 hari tetap tepat).
+     * Bulan-bulan lama sedikit lebih rendah agar grafik memperlihatkan tren naik.
+     */
+    public static function isiRiwayatPemakaian(int $obatId, callable $pola): void
+    {
+        $baris = [];
+        for ($n = 1; $n <= 179; $n++) {
+            if ($n === 90) {
+                continue;
+            }
+            $jumlah = $n < 90 ? $pola($n) : (int) floor($pola($n) * 0.8);
+            if ($jumlah > 0) {
+                $waktu = now()->subDays($n)->setTime(10, 0);
+                $baris[] = [
+                    'obat_id' => $obatId, 'jenis' => 'keluar', 'jumlah' => $jumlah,
+                    'keterangan' => 'Data contoh pemakaian (demo DDDM)', 'sumber' => self::SUMBER,
+                    'created_at' => $waktu, 'updated_at' => $waktu,
+                ];
+            }
+        }
+        foreach (array_chunk($baris, 100) as $potong) {
+            TransaksiStok::insert($potong);
+        }
+    }
+
+    /** Obat baru dengan data pemakaian < 1 bulan -> rekomendasi belum dapat dihitung (UC-11). */
+    public static function isiPemakaianObatBaru(int $obatId): void
+    {
+        for ($n = 1; $n <= 9; $n++) {
+            TransaksiStok::insert(['obat_id' => $obatId, 'jenis' => 'keluar', 'jumlah' => 2,
+                'keterangan' => 'Data contoh pemakaian (demo DDDM)', 'sumber' => self::SUMBER,
+                'created_at' => now()->subDays($n), 'updated_at' => now()->subDays($n)]);
         }
     }
 }

@@ -1,31 +1,46 @@
-Tampilan baru HIS - daftar file (versi 2)
-=========================================
+HIS - paket pembaruan (versi 3)
+===============================
+Berisi: tampilan baru (versi 2) + prediksi antrean (DDDM SIRATA) + penyegar data demo.
+Tidak ada data yang dihapus oleh migrasi. Sudah dicoba: 46 tes otomatis lulus (37 lama + 9 baru),
+dan alur pembaruan disimulasikan di PostgreSQL seperti di Aiven.
 
-File BARU
-  public/css/tema.css
-      Semua aturan tampilan baru. Dimuat paling akhir sehingga menimpa CSS lama.
-      Berisi juga: menu HP (tombol tiga garis) dan susunan "judul di luar, isi dalam satu panel"
-      untuk semua halaman yang memakai <section class="obat-card">.
+A. TAMPILAN (sama seperti versi 2)
+  BARU    public/css/tema.css
+  DIUBAH  resources/views/layouts/app.blade.php, auth/login.blade.php, dashboard.blade.php, errors/halaman.blade.php
+  DIUBAH  public/css/halaman-error.css, public/offline.html, public/sw.js
 
-File DIGANTI
-  resources/views/layouts/app.blade.php
-      Header putih, menu teks, tagline dihapus, tombol Menu untuk HP + skrip buka/tutup.
-  resources/views/auth/login.blade.php
-      Login dua panel, animasi jaringan titik dihapus. Di HP panel info diringkas.
-  resources/views/dashboard.blade.php
-      Tabel "Perlu tindakan hari ini" + Pintasan.
-  resources/views/errors/halaman.blade.php
-      Kerangka halaman error: font baru dan ukuran logo. Isi tiap halaman error (403, 404, dst.) TIDAK diubah.
-  public/css/halaman-error.css
-      Hanya bingkai (header, latar, kartu, tombol). Ilustrasi dan semua @keyframes animasi sama persis.
-  public/offline.html
-      CSS di dalamnya disamakan dengan halaman-error.css. Ilustrasi dan animasi tidak diubah.
-  public/sw.js
-      Versi cache naik ke irs-offline-v2 supaya browser mengambil offline.html yang baru;
-      gambar latar lama tidak lagi disimpan di cache.
+B. PREDIKSI ANTREAN (subsistem Antrean / SIRATA - bagian Puspa)
+  BARU    app/Services/PrediksiAntreanService.php
+          Median lama layanan 4 minggu, perkiraan waktu tunggu, beban dibanding hari yang sama
+          sampai jam yang sama. Data minimal: 3 hari pembanding & 5 pelayanan selesai.
+  DIUBAH  app/Services/RekomendasiAntreanService.php
+          Poli yang >= 30% lebih ramai dari biasanya (dan minimal 3 antrean) naik satu tingkat prioritas.
+  DIUBAH  app/Http/Controllers/AntreanController.php, app/Models/Antrean.php
+  DIUBAH  resources/views/antrean/rekomendasi.blade.php   (kolom beban & perkiraan tunggu + "Cara menghitung prediksi")
+  DIUBAH  resources/views/antrean/index.blade.php         (kolom "Perkiraan tunggu" untuk pasien yang menunggu)
 
-Tidak ada controller, model, route, atau database yang diubah.
-Sudah dicoba: 37 tes otomatis lulus, semua halaman dicek di layar laptop dan HP.
+C. DATA SIMULASI & PENYEGAR DATA DEMO
+  BARU    database/migrations/2026_11_27_000007_add_sumber_to_antrean_table.php
+          Menambah kolom antrean.sumber. Antrean yang SUDAH ADA saat migrasi ditandai 'demo'
+          (sampai sekarang aplikasi baru dipakai untuk demo). Antrean baru dari petugas tidak bertanda.
+  DIUBAH  database/seeders/PendaftaranAntreanDemoSeeder.php
+          Riwayat antrean 4 minggu BERPOLA (data simulasi, sumber='demo'): Senin paling ramai, Minggu tutup.
+          Hari ini: Poli Anak sengaja ±50% di atas biasa supaya fitur prediksi terlihat saat demo.
+  DIUBAH  database/seeders/MediStockDemoSeeder.php   (isi sama, hanya dipecah supaya bisa dipanggil ulang)
+  BARU    app/Console/Commands/SegarkanDataDemo.php
+          php artisan demo:segarkan  -> membuat ulang data demo relatif ke HARI INI:
+          antrean demo, riwayat pemakaian obat demo, dan tanggal kedaluwarsa batch demo.
+          Data input petugas tidak disentuh.
+  DIUBAH  docker/start.sh
+          Jika variabel DEMO_SEGARKAN=true di Render, data demo disegarkan setiap server menyala.
 
-Catatan: gambar public/images/latar-web.jpg dan motif-header.jpg sekarang tidak dipakai lagi.
-Boleh dibiarkan atau dihapus belakangan.
+D. TES
+  BARU    tests/Feature/PrediksiAntreanTest.php  (9 tes)
+
+LANGKAH DI RENDER (sekali saja)
+  1. Setelah kode masuk ke main, buka Render > layanan HIS > Environment, tambahkan:
+         DEMO_SEGARKAN = true
+  2. Simpan. Render akan deploy ulang: migrasi menambah kolom sumber, lalu data demo disegarkan.
+  3. Sebelum presentasi berikutnya, cukup klik "Manual Deploy > Restart" (atau deploy ulang)
+     supaya data demo kembali relatif ke hari itu.
+  Jangan pernah menjalankan migrate:fresh ke database Aiven.

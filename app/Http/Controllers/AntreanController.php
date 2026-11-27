@@ -6,6 +6,7 @@ use App\Models\Antrean;
 use App\Models\Pasien;
 use App\Models\Poli;
 use App\Services\AntreanService;
+use App\Services\PrediksiAntreanService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,7 +14,7 @@ class AntreanController extends Controller
 {
     private const URUTAN = ['dipanggil' => 1, 'dilayani' => 2, 'menunggu' => 3, 'selesai' => 4, 'batal' => 5];
 
-    public function index(Request $request)
+    public function index(Request $request, PrediksiAntreanService $prediksi)
     {
         $cari = trim((string) $request->query('cari', ''));
         $filterStatus = in_array($request->query('filter_status'), Antrean::STATUS, true) ? $request->query('filter_status') : '';
@@ -29,6 +30,10 @@ class AntreanController extends Controller
             ->sortBy(fn ($a) => [self::URUTAN[$a->status] ?? 6, $a->id])
             ->values();
 
+        // Perkiraan waktu tunggu tiap pasien yang masih menunggu (dari riwayat 4 minggu).
+        $daftarPoli = Poli::where('aktif', true)->orderBy('nama_poli')->get();
+        $perkiraan = $prediksi->perkiraanPerAntrean($hariIni, $prediksi->untukHariIni($daftarPoli, $hariIni));
+
         $ringkasan = ['total' => $hariIni->count()] + collect(Antrean::STATUS)
             ->mapWithKeys(fn ($s) => [$s => $hariIni->where('status', $s)->count()])->all();
 
@@ -38,7 +43,8 @@ class AntreanController extends Controller
             'cari' => $cari,
             'filterStatus' => $filterStatus,
             'daftarPasien' => Pasien::orderBy('nama')->get(),
-            'daftarPoli' => Poli::where('aktif', true)->orderBy('nama_poli')->get(),
+            'daftarPoli' => $daftarPoli,
+            'perkiraan' => $perkiraan,
         ]);
     }
 

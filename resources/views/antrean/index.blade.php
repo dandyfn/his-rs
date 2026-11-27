@@ -62,7 +62,7 @@
         </form>
         <div class="obat-scroll">
             <table class="obat-table">
-                <thead><tr><th>No. Antrean</th><th>Kode Pasien</th><th>Nama Pasien</th><th>Poli</th><th>Status</th>@can('antrean.layani')<th>Tindakan</th>@endcan</tr></thead>
+                <thead><tr><th>No. Antrean</th><th>Kode Pasien</th><th>Nama Pasien</th><th>Poli</th><th>Status</th><th>Perkiraan tunggu</th>@can('antrean.layani')<th>Tindakan</th>@endcan</tr></thead>
                 <tbody>
                 @forelse ($daftar as $a)
                     <tr>
@@ -71,6 +71,17 @@
                         <td>{{ $a->pasien->nama }}</td>
                         <td>{{ $a->poli->nama_poli }}</td>
                         <td><span class="badge {{ $a->kelasStatus() }}">{{ $a->status }}</span></td>
+                        <td>
+                            @if ($a->status !== 'menunggu')
+                                <span class="teks-bantu">-</span>
+                            @elseif (($perkiraan[$a->id] ?? null) === null)
+                                <span class="teks-bantu" title="Riwayat pelayanan poli ini belum cukup (minimal 5 pelayanan selesai dalam 4 minggu).">Data belum cukup</span>
+                            @elseif ($perkiraan[$a->id] === 0)
+                                Segera
+                            @else
+                                ± {{ $perkiraan[$a->id] }} menit
+                            @endif
+                        </td>
                         @can('antrean.layani')
                         <td>
                             <div class="aksi-baris">
@@ -99,10 +110,14 @@
                         @endcan
                     </tr>
                 @empty
-                    <tr><td colspan="6">Belum ada antrean hari ini.</td></tr>
+                    <tr><td colspan="7">Belum ada antrean hari ini.</td></tr>
                 @endforelse
                 </tbody>
             </table>
         </div>
+        <p class="teks-bantu">
+            Perkiraan tunggu = (antrean yang sedang dipanggil/dilayani + antrean menunggu di depannya) × lama layanan biasa poli tersebut
+            (median 4 minggu terakhir). Angka ini perkiraan, bukan janji waktu.
+        </p>
     </section>
 @endsection

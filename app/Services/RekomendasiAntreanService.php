@@ -9,19 +9,26 @@ use Illuminate\Support\Collection;
 /**
  * Fungsi Data-Driven Decision Making subsistem Antrean (SIRATA).
  * Aturan prioritas dan saran sama dengan versi PHP native, ditambah
- * rata-rata waktu tunggu hari ini (dari waktu daftar sampai mulai dilayani).
+ * rata-rata waktu tunggu hari ini (dari waktu daftar sampai mulai dilayani),
+ * dan prediksi beban serta waktu tunggu dari riwayat 4 minggu (PrediksiAntreanService).
  */
 class RekomendasiAntreanService
 {
+    public function __construct(private PrediksiAntreanService $prediksi)
+    {
+    }
+
     /** @param  Collection|null  $antrean  antrean hari ini yang sudah dimuat (opsional, hemat query) */
     public function analisisHariIni(?Collection $antrean = null): Collection
     {
-        $antreanHariIni = ($antrean ?? Antrean::whereDate('tanggal_kunjungan', today())->get())
-            ->where('status', '<>', 'batal')
-            ->groupBy('poli_id');
+        $semua = $antrean ?? Antrean::whereDate('tanggal_kunjungan', today())->get();
+        $antreanHariIni = $semua->where('status', '<>', 'batal')->groupBy('poli_id');
 
-        return Poli::where('aktif', true)->orderBy('nama_poli')->get()
-            ->map(function (Poli $poli) use ($antreanHariIni) {
+        $daftarPoli = Poli::where('aktif', true)->orderBy('nama_poli')->get();
+        $prediksi = $this->prediksi->untukHariIni($daftarPoli, $semua);
+
+        return $daftarPoli
+            ->map(function (Poli $poli) use ($antreanHariIni, $prediksi) {
                 $data = $antreanHariIni->get($poli->id, collect());
                 $hitung = fn ($status) => $data->where('status', $status)->count();
 
@@ -38,10 +45,35 @@ class RekomendasiAntreanService
                     'kapasitas' => $poli->batas_antrean > 0 ? (int) round($data->count() / $poli->batas_antrean * 100) : null,
                 ];
 
-                return $r + $this->saran($r, $poli->batas_antrean);
+                $r += $this->saran($r, $poli->batas_antrean);
+                $r['prediksi'] = $prediksi[$poli->id];
+
+                return $this->perkuatDenganBeban($r);
             })
             ->sortByDesc('menunggu')
             ->values();
+    }
+
+    /**
+     * Aturan tambahan dari prediksi: poli yang >= 30% lebih ramai dari biasanya
+     * (hari yang sama, jam yang sama) dinaikkan satu tingkat prioritasnya.
+     */
+    public function perkuatDenganBeban(array $r): array
+    {
+        $p = $r['prediksi'] ?? null;
+        if (! $p || ! $p['ramai']) {
+            return $r;
+        }
+
+        $naik = ['Normal' => 'Sedang', 'Sedang' => 'Tinggi', 'Tinggi' => 'Tinggi'];
+        if ($r['prioritas'] !== 'Tinggi') {
+            $r['judul'] = 'Lebih ramai dari biasanya';
+        }
+        $r['prioritas'] = $naik[$r['prioritas']];
+        $r['saran'] .= " Hari ini {$p['selisih_persen']}% di atas biasanya hari {$p['hari']} pada jam yang sama."
+            . ' Pertimbangkan menambah petugas atau mengarahkan pasien baru ke jam yang lebih sepi.';
+
+        return $r;
     }
 
     /** Aturan prioritas (dipisah agar mudah diuji). */
