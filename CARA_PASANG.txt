@@ -1,0 +1,14 @@
+Tampilan baru HIS - file yang berubah
+=====================================
+
+File BARU:
+  public/css/tema.css                      -> semua aturan tampilan baru (dimuat paling akhir)
+
+File DIGANTI:
+  resources/views/layouts/app.blade.php    -> header putih, menu teks tanpa ikon, tagline dihapus, memuat tema.css
+  resources/views/auth/login.blade.php     -> login baru, animasi jaringan titik dihapus
+  resources/views/dashboard.blade.php      -> tabel "Perlu tindakan hari ini" + pintasan
+
+Tidak ada controller, model, route, atau database yang diubah.
+Untuk kembali ke tampilan lama: hapus baris <link ... tema.css> di layouts/app.blade.php
+dan kembalikan login.blade.php serta dashboard.blade.php versi lama dari Git.
